@@ -1,9 +1,8 @@
-import keys from "./apikey.js";
 const timeSpan = 30; //max days between today and release date
 //let redirect_uri = "http://127.0.0.1:63342/spotifyRelease/index.html"; //requires adress of index.html in current environment
 let redirect_uri = "https://releasr.netlify.app/"
-let client_id = keys.id;
-let client_secret = keys.secret;
+let client_id = localStorage.getItem("client_id");
+let client_secret = localStorage.getItem("client_secret");
 const authorize = "https://accounts.spotify.com/authorize";
 const TOKEN = "https://accounts.spotify.com/api/token";
 const followedartists = "https://api.spotify.com/v1/me/following?type=artist&limit=50";
