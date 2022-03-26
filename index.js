@@ -1,8 +1,8 @@
 const timeSpan = 30; //max days between today and release date
 
 let redirect_uri = "http://127.0.0.1:63342/spotifyRelease/index.html"; //requires adress of index.html in current environment
-let client_id = "";
-let client_secret = "";
+let client_id = process.env.client_id;
+let client_secret = process.env.client_secret;
 const authorize = "https://accounts.spotify.com/authorize";
 const TOKEN = "https://accounts.spotify.com/api/token";
 const followedartists = "https://api.spotify.com/v1/me/following?type=artist&limit=50";
