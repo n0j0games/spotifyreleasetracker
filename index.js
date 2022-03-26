@@ -444,6 +444,7 @@ function requestAuthorization(){
 }
 
 function logout() {
-    localStorage.clear();
+    localStorage.setItem("access_token", null);
+    localStorage.setItem("refresh_token", null);
     location.reload();
 }
