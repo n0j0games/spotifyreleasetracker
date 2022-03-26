@@ -1,8 +1,9 @@
 const timeSpan = 30; //max days between today and release date
 
-let redirect_uri = "http://127.0.0.1:63342/spotifyRelease/index.html"; //requires adress of index.html in current environment
-let client_id = process.env.client_id;
-let client_secret = process.env.client_secret;
+//let redirect_uri = "http://127.0.0.1:63342/spotifyRelease/index.html"; //requires adress of index.html in current environment
+let redirect_uri = "https://releasr.netlify.app/"
+let client_id = localStorage.getItem("client_id");
+let client_secret = localStorage.getItem("client_secret");
 const authorize = "https://accounts.spotify.com/authorize";
 const TOKEN = "https://accounts.spotify.com/api/token";
 const followedartists = "https://api.spotify.com/v1/me/following?type=artist&limit=50";
@@ -16,8 +17,7 @@ function onPageLoad(){
     document.getElementById("app").style.display = 'none';
     if ( window.location.search.length > 0 ){
         handleRedirect();
-    }
-    else{
+    } else {
         access_token = localStorage.getItem("access_token");
         if ( access_token == null ){
             // we don't have an access token so present token section
