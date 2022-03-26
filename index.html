@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>releasr | Spotify Release Tracker</title>
+    <script src="index.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@100;300;400;500;700;800;900&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap">
+    <script src="https://kit.fontawesome.com/038f795198.js" crossorigin="anonymous"></script>
+</head>
+<body onload="onPageLoad()">
+    <!-- User-Info Section -->
+    <div id="loginInfo">
+        <img id="loginImg" src="images/profilepic.png" alt="">
+        <p id="loginUser">Not logged in</p>
+        <button id="logoutBtn" onclick="logout()">Logout</button>
+    </div>
+    <!-- Auth-Section -->
+    <section id="authorize">
+        <p id="welcomeTitle">releasr | Spotify Release Tracker</p>
+        <p id="description">Sign in with your Spotify account to get a list of new releases for each artist you follow</p>
+        <button id="authbutton" onclick="requestAuthorization()">Authorize</button>
+        <img id="preview" src="images/preview.png" alt="">
+    </section>
+    <!-- App Section -->
+    <section id="app">
+        <p id="title">Latest Releases</p>
+        <div id="filter" class="filter">
+            <button id="albumsbtn" class="inactiveBtn" onclick="toggleAlbumType(true)">Albums</button>
+            <button id="singlebtn" class="inactiveBtn" onclick="toggleAlbumType(false)">Singles</button>
+            <button id="featureBtn" class="inactiveBtn" onclick="toggleFeatures()">Hide Features</button>
+        </div>
+        <div id="releases">
+            <p id="noartists">Either you're not following anyone on Spotify, or there aren't any recent releases for your artists.</p>
+        </div>
+    </section>
+    <hr>
+    <p id="footer">We are not related to Spotify AB or any of it´s partners in any way.  &#8226;
+        This page only caches your accesstoken and refreshtoken to keep you logged in.  &#8226;
+        We only read your user information & the list of your followed artists. We do not change any data on your account</p>
+    <!--<div id="overlay" onclick="hideOverlay()">
+        <div id="innerOverlay">
+            <img id="overlayImg" src='' alt="">
+            <p id="overlayTitle">Test</p>
+            <p id="overlayAuthor">Test</p>
+        </div>
+    </div>-->
+</body>
+</html>

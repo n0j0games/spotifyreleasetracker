@@ -1,0 +1,372 @@
+:root {
+    --background: #121212;
+    --brown: #5f201e;
+    --sand: #e5cc7f;
+    --green: #1ED760;
+    --lowlight: #B3B3B3;
+    --highlight: #2A2A2A;
+    --red: #E43B44;
+    --mobileWrap: 700px;
+    --footer: #777;
+}
+
+body {
+    background-color: var(--background);
+    color: #fff;
+    font-family: 'Chakra Petch', sans-serif;
+    overflow-x: hidden;
+    margin: 0;
+}
+
+button {
+    font-family: 'Chakra Petch', sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+}
+
+p {
+    margin: 0;
+}
+
+#loginInfo {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--background);
+    border: 1px solid var(--highlight);
+}
+
+#loginImg {
+    width: 20px;
+    height: 20px;
+    border-radius: 50px;
+    margin: 5px;
+}
+
+#loginUser {
+    font-weight: 300;
+    display: inline-block;
+    margin: 5px;
+}
+
+#logoutBtn {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    color: white;
+    text-decoration: underline;
+    margin: 3px;
+    padding: 0;
+    border-radius: 5px;
+    display: none;
+}
+
+#logoutBtn:hover {
+    color:var(--red);
+}
+
+#loginUserHighlight {
+    font-weight: 500;
+    display: inline-block;
+}
+
+#authorize {
+    width: 100vw;
+    height: calc(100vh - 50px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+#preview {
+    width: 70%;
+    max-width: 800px;
+    border-radius: 25px;
+    border: 2px solid var(--green);
+}
+
+#welcomeTitle {
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--green);
+    margin: 20px;
+}
+
+#description {
+    font-weight: 300;
+    font-size: 16px;
+    color: var(--lowlight);
+    margin: 0 20px;
+}
+
+#authbutton {
+    margin: 50px;
+    border-radius: 25px;
+    padding: 9px 20px;
+    outline: none;
+    border: 1px solid var(--green);
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--background);
+    background-color: var(--green);
+}
+
+#authbutton:hover {
+    color: var(--green);
+    background-color: var(--background);
+}
+
+#releases {
+    margin: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.singleRelease {
+    /* blur background */
+    /*background-image: url("https://m.media-amazon.com/images/I/71889eHAo6L._SS500_.jpg");*/
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    min-width: var(--mobileWrap);
+    width: 50%;
+    height: auto;
+    margin: 5px;
+}
+
+.blur {
+    background-color: #181818;
+    /*backdrop-filter: blur(8px);*/
+
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.blur:hover {
+    background-color: var(--highlight);
+}
+
+.singleRelease img {
+    width: 60px;
+    height: 60px;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+i {
+    padding: 3px;
+}
+
+.rightContent {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.lowerContent {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 10px;
+    flex-grow: 2;
+    min-width: 30%;
+}
+
+.releaseArtist, .lowerContent {
+    color: var(--lowlight);
+    font-weight: 300;
+    font-size: 14px;
+}
+
+.releaseArtist {
+    margin: 3px 5px 10px 5px;
+}
+
+.releaseType, .releaseDate {
+    margin: 0 10px 0 0;
+}
+
+.blur:hover .releaseName {
+    color: var(--green);
+}
+
+.releaseName {
+    color: white;
+    font-weight: 500;
+    font-size: 16px;
+    margin: 10px 5px 3px 5px;
+}
+
+#title {
+    color: var(--green);
+    font-size: 24px;
+    font-weight: 700;
+    width: calc(100% - 40px);
+    text-align: center;
+    padding: 20px;
+    letter-spacing: 1px;
+}
+
+.filter {
+    width: calc(100% - 20px);
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter button {
+    margin: 5px;
+    border-radius: 25px;
+    padding: 7px 14px;
+    outline: none;
+    font-weight: 700;
+}
+
+.inactiveBtn {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+}
+
+.inactiveBtn:hover {
+    background: var(--green);
+    color: black;
+    border: 1px solid var(--green);
+}
+
+.activeBtn {
+    background: var(--green);
+    color: black;
+    border: 1px solid var(--green);
+}
+
+.activeBtn:hover {
+    background: black;
+    color: var(--green);
+    border: 1px solid var(--green);
+}
+
+#noartists {
+    display: none;
+}
+
+#footer {
+    color: var(--footer);
+    font-size: 14px;
+    width: 100%;
+    margin: 20px;
+    text-align: center;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+}
+
+hr {
+    background-color: var(--highlight);
+    color: var(--highlight);
+    border: solid 1px var(--highlight);
+}
+
+/*
+    Mobile
+ */
+@media (max-width: 700px) {
+
+    #loginInfo {
+        position: absolute;
+    }
+
+    #title {
+        margin-top: 70px;
+    }
+
+    #app {
+        margin: 0;
+    }
+
+    #releases {
+        width: 100vw;
+        margin: 30px 0 0 0;
+    }
+
+    .singleRelease {
+        margin: 5px 0;
+        width: 100%;
+        height: auto;
+        background-color: transparent;
+        background-image: none !important;
+        min-width: 0;
+    }
+
+    .blur {
+        width: 100%;
+        display: block;
+    }
+
+    .rightcontent, .releaseArtist, .releaseName, .lowerContent {
+        flex-wrap: wrap;
+        margin: 0;
+    }
+
+    .rightContent, .lowerContent {
+        padding: 2px 10px;
+    }
+
+    .lowerContent {
+        justify-content: flex-start;
+        padding-bottom: 10px;
+    }
+
+    #preview {
+        display: none;
+    }
+
+    #description {
+        text-align: center;
+    }
+
+    #footer {
+        margin: 0;
+    }
+}
+
+/*
+    Scrollbar
+ */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+
+::-webkit-scrollbar-track {
+    background: linear-gradient(0deg, var(--highlight), #db0000);
+    background: var(--highlight);
+    background-size: 400% 100%;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--lowlight);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--green);
+}
