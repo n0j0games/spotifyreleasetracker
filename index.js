@@ -1,8 +1,9 @@
+import keys from "./apikey.js";
 const timeSpan = 30; //max days between today and release date
-//let redirect_uri = "http://127.0.0.1:63342/spotifyRelease/index.html"; //requires adress of index.html in current environment
-let redirect_uri = "https://releasr.netlify.app/"
-let client_id = localStorage.getItem("client_id");
-let client_secret = localStorage.getItem("client_secret");
+let redirect_uri = keys.uri;
+//let redirect_uri = "https://releasr.netlify.app/"
+let client_id = keys.id;
+let client_secret = keys.secret;
 const authorize = "https://accounts.spotify.com/authorize";
 const TOKEN = "https://accounts.spotify.com/api/token";
 const followedartists = "https://api.spotify.com/v1/me/following?type=artist&limit=50";
@@ -12,7 +13,10 @@ const userprofile = "https://api.spotify.com/v1/me";
     Main = On Page Load
  */
 
-function onPageLoad(){
+let access_token = "";
+let refresh_token = "";
+
+window.onPageLoad = function (){
     document.getElementById("app").style.display = 'none';
     if ( window.location.search.length > 0 ){
         handleRedirect();
@@ -251,7 +255,7 @@ function hideOverlay(){
 }
 
 let showFeatures = true;
-function toggleFeatures(){
+window.toggleFeatures = function (){
     const featureElem = document.getElementById("featureBtn");
     showFeatures = !showFeatures;
     let elems = document.getElementsByClassName('isFeature');
@@ -274,7 +278,7 @@ function toggleFeatures(){
 }
 
 let albumtype = 0; //0 = both (default), 1 = album only, 2 = single only
-function toggleAlbumType(clickedOnAlbums) {
+window.toggleAlbumType = function (clickedOnAlbums) {
     const albumElem = document.getElementById("albumsbtn");
     const singleElem = document.getElementById("singlebtn");
     if (clickedOnAlbums && albumtype === 1 || !clickedOnAlbums && albumtype === 2 ) {
@@ -432,7 +436,7 @@ function getCode() {
 }
 
 //Authorize user to app
-function requestAuthorization(){
+window.requestAuthorization = function (){
     let url = authorize;
     url += "?client_id=" + client_id;
     url += "&response_type=code";
@@ -443,7 +447,7 @@ function requestAuthorization(){
     window.location.href = url; // Show Spotify's authorization screen
 }
 
-function logout() {
+window.logout = function () {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     location.reload();
