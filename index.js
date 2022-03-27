@@ -52,7 +52,6 @@ function getNextUsersArtists(after) {
 function handleGetUsersNextArtists() {
     if ( this.status == 200 ){
         let data = JSON.parse(this.responseText);
-        console.log(data, document.body);
         albumsPerArtist(data);
     }
     else if ( this.status == 401 ){
@@ -241,7 +240,7 @@ function showResults() {
         htmlstring += `<p class="releaseType"><i class="fas fa-compact-disc"></i> ${results[x]["type"].toUpperCase()}</p>
             <p class="releaseDate"><i class="fas fa-calendar"></i> ${results[x]["release"]}</p></div></div></a>`;
     }
-    document.getElementById("releases").innerHTML = htmlstring;
+    document.getElementById("releases").innerHTML += htmlstring;
 }
 
 function showOverlay(i) {
@@ -275,6 +274,7 @@ window.toggleFeatures = function (){
         }
 
     }
+    checkZeroElems();
 }
 
 let albumtype = 0; //0 = both (default), 1 = album only, 2 = single only
@@ -312,6 +312,7 @@ window.toggleAlbumType = function (clickedOnAlbums) {
         //console.log("single");
         //album off, single light
     }
+    checkZeroElems();
 }
 
 function toggleAlbums(enable){
@@ -337,6 +338,20 @@ function toggleSingles(enable){
             item.style.display = 'none';
         else
             item.style.display = 'block';
+    }
+}
+
+function checkZeroElems(){
+    let elems = document.getElementsByClassName('singleRelease');
+    let active = elems.length;
+    for (let i = 0; i < elems.length; ++i) {
+        if (elems[i].style.display === "none")
+            active--;
+    }
+    if (active === 0) {
+        document.getElementById("emptyfilter").style.display = "block";
+    } else {
+        document.getElementById("emptyfilter").style.display = "none";
     }
 }
 

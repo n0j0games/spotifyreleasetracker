@@ -8,6 +8,8 @@
     --red: #E43B44;
     --mobileWrap: 700px;
     --footer: #777;
+    --green1: #265C42;
+    --green2: #193C3E;
 }
 
 body {
@@ -32,7 +34,7 @@ p {
 }
 
 #loginInfo {
-    position: fixed;
+    position: absolute;
     right: 20px;
     top: 20px;
     border-radius: 15px;
@@ -100,6 +102,18 @@ p {
     font-size: 30px;
     color: var(--green);
     margin: 20px;
+    /*text-shadow: 0 3px 0 var(--green2), 0 6px 0 var(--brown);*/
+}
+
+#mainTitle {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--green);
+    margin-left: 20px;
+    text-shadow: 0 3px 0 var(--green1), 0 6px 0 var(--brown);
 }
 
 #description {
@@ -222,6 +236,7 @@ i {
     width: calc(100% - 40px);
     text-align: center;
     padding: 20px;
+    margin-top: 10px;
     letter-spacing: 1px;
 }
 
@@ -248,25 +263,26 @@ i {
     border: 1px solid white;
 }
 
-.inactiveBtn:hover {
-    background: var(--green);
-    color: black;
-    border: 1px solid var(--green);
-}
-
-.activeBtn {
-    background: var(--green);
-    color: black;
-    border: 1px solid var(--green);
-}
-
-.activeBtn:hover {
-    background: black;
+.activeBtn  {
+    background: transparent;
     color: var(--green);
     border: 1px solid var(--green);
 }
 
-#noartists {
+.inactiveBtn:hover, .activeBtn:hover {
+    background: var(--green);
+    color: black;
+    border: 1px solid var(--green);
+}
+
+/*
+.activeBtn:hover {
+    background: black;
+    color: var(--green);
+    border: 1px solid var(--green);
+}*/
+
+#noartists, #emptyfilter {
     display: none;
 }
 
