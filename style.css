@@ -59,7 +59,7 @@ p {
     margin: 5px;
 }
 
-#logoutBtn {
+#logoutBtn, #artistBtn {
     outline: none;
     border: none;
     background-color: transparent;
@@ -69,6 +69,10 @@ p {
     padding: 0;
     border-radius: 5px;
     display: none;
+}
+
+#artistBtn:hover {
+    color:var(--green);
 }
 
 #logoutBtn:hover {
@@ -106,6 +110,7 @@ p {
 }
 
 #mainTitle {
+    z-index: 1;
     position: absolute;
     left: 20px;
     top: 20px;
@@ -214,8 +219,12 @@ i {
     margin: 3px 5px 10px 5px;
 }
 
-.releaseType, .releaseDate {
+.releaseType, .releaseDate, .releaseUnreleased {
     margin: 0 10px 0 0;
+}
+
+.releaseUnreleased {
+    color: var(--sand);
 }
 
 .blur:hover .releaseName {
@@ -302,17 +311,181 @@ hr {
     border: solid 1px var(--highlight);
 }
 
+#artistPopup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    backdrop-filter: blur(4px);
+    display: none;
+    /*display: flex;*/
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#artistFG {
+    padding: 10px;
+    background-color: #181818;
+    display: block;
+    max-height: 80%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-width: 300px;
+    border: 1px solid var(--highlight);
+}
+
+.artistDiv {
+    width: calc(100% - 20px);
+    padding: 5px 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.artistDiv:hover {
+    background-color: var(--highlight);
+}
+
+.artistDiv img {
+    width: 30px;
+    height: 30px;
+    border-radius: 25px;
+    margin: 5px;
+}
+
+.artistTitle {
+    margin: 5px;
+    flex-grow: 2;
+}
+
+.artistSpotify {
+    margin: 0 10px;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--lowlight);
+}
+
+#artistReset:hover {
+    color: white !important;
+    background-color: var(--red) !important;
+    border: 1px solid var(--red) !important;
+}
+
+.artistsManageDiv button, .artistDiv button, .artistsManageDiv input, #artistClose {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 14px;
+    background-color: transparent;
+    color: var(--lowlight);
+    outline: none;
+    border: 1px solid var(--lowlight);
+    padding: 3px 5px;
+    border-radius: 2px;
+    margin: 5px;
+    text-transform: capitalize;
+}
+
+.artistsManageDiv {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.artistsManageDiv input {
+    flex-grow: 2;
+}
+
+#artistPopup button:hover {
+    color: black;
+    background-color: var(--green);
+    border: 1px solid var(--green);
+}
+
+#error {
+    position: fixed;
+    margin: 10px;
+    top: 0;
+    left: 0;
+    width: calc(100vw - 50px);
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #E43B44cc;
+    backdrop-filter: blur(5px);
+    display: none;
+    /*display: flex;*/
+    z-index: 100;
+    align-items: center;
+}
+
+#error i {
+    font-size: 20px;
+}
+
+#error i:hover {
+    color: #000;
+}
+
+#errorSub {
+    flex-direction: column;
+    justify-content: flex-start;
+    flex-grow: 2;
+}
+
+#errorTitle {
+    font-weight: 700;
+}
+
+#errorSubtitle {
+    font-weight: 300;
+}
+
 /*
     Mobile
  */
-@media (max-width: 700px) {
+@media only screen and (max-width: 700px) {
+
+    #mainTitle {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin: 15px;
+        width: calc(100% - 30px);
+        text-align: center;
+    }
 
     #loginInfo {
-        position: absolute;
+        position: relative;
+        top: 0;
+        left: 0;
+        margin: 15px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #artistPopup {
+        background-color: #181818;
+    }
+
+    #artistFG {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        max-height: 100%;
+        min-width: 0;
+        border: none;
+        margin: 15px;
+    }
+
+    #artistClose {
+        margin: 15px;
     }
 
     #title {
-        margin-top: 70px;
+        margin-top: 30px;
     }
 
     #app {
