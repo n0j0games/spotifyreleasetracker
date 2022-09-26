@@ -61,9 +61,10 @@
     </div>-->
     <section id="artistPopup">
         <ul id="artistFG">
+            <button onclick="enableArtistsDiv(false)" id="artistClose"><i class="fa-solid fa-xmark"></i></button>
             <li id="artistsTopContent">
                 <div class="artistsManageDiv" id="artistAdd">
-                    <input id="artistAddInput" type="text" placeholder="Enter Artist ID or Share-Link">
+                    <input id="artistAddInput" type="text" placeholder="Search for artist or enter directlink">
                     <button onclick="addArtist()" id="artistAddBtn">Add</button>
                 </div>
                 <div class="artistsManageDiv">
@@ -72,7 +73,6 @@
                 </div>
             </li>
         </ul>
-        <button onclick="enableArtistsDiv(false)" id="artistClose"><i class="fa-solid fa-xmark"></i> CLOSE</button>
     </section>
 </body>
 </html>

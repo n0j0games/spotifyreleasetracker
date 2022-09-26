@@ -9,6 +9,7 @@ const authorize = "https://accounts.spotify.com/authorize";
 const TOKEN = "https://accounts.spotify.com/api/token";
 const followedartists = "https://api.spotify.com/v1/me/following?type=artist&limit=50";
 const artistprofile = "https://api.spotify.com/v1/artists/";
+const searchartist = "https://api.spotify.com/v1/search?type=artist&q=";
 const userprofile = "https://api.spotify.com/v1/me";
 
 const artistDivHTML = document.getElementById("artistFG").innerHTML;
@@ -157,6 +158,17 @@ window.hideArtist = function (nr) {
     updateArtistDiv();
 }
 
+window.removeArtist = function (nr) {
+    console.log(artistids);
+    for (let k in artistids) {
+        if (artistids[nr].name === artistids[k].name)
+            artistids.splice(nr, 1);
+    }
+    localStorage.setItem("artists", JSON.stringify(artistids));
+    refreshAlbums();
+    updateArtistDiv();
+}
+
 /* save artist list to localstorage & refresh div */
 function saveArtistList() {
     localStorage.setItem("artists", JSON.stringify(artistids));
@@ -196,29 +208,32 @@ function updateArtistDiv() {
         if (artistids[x].following) {
             html += `<p class="artistSpotify"><i class="fa-solid fa-rotate"></i>Following</p>`
         }
-        if (artistids[x].active) {
+        if (!artistids[x].following) {
+            html += `<button onclick="removeArtist(${x})">Remove</button></li>`
+        } else if (artistids[x].active) {
             html += `<button onclick="hideArtist(${x})">Hide</button></li>`
         } else {
             html += `<button onclick="hideArtist(${x})">Show</button></li>`
         }
+
     }
     div.innerHTML = artistDivHTML + html;
 }
 
+let searchq = null;
 window.addArtist = function() {
+    searchq = null;
     console.log("addArtist");
-    //TODO infos über artist via ID aufrufen und  zu artistsid hinzufügen
     const input = document.getElementById("artistAddInput");
-    let id = input.value;
+    searchq = input.value;
     input.value = "";
-    if (id == null)
+    if (searchq === null || searchq === "")
         return;
-    else if (id.startsWith("https")) {
-        //https://open.spotify.com/artist/5SXuuuRpukkTvsLuUknva1
-        const split = id.split("?")[0].split("/");
-        id = split[split.length-1];
+    else if (searchq.startsWith("https")) {
+        const split = searchq.split("?")[0].split("/");
+        searchq = split[split.length-1];
     }
-    callApi("GET", artistprofile+id, null, handleAddArtist );
+    callApi("GET", artistprofile+searchq, null, handleAddArtist );
 }
 
 function handleAddArtist() {
@@ -226,19 +241,49 @@ function handleAddArtist() {
         let data = JSON.parse(this.responseText);
         const name = data["name"];
         if (name == null) {
-            console.warn("Artist not found");
+            console.log("Artist ID not found");
+            console.log(name);
+            searchArtist();
             return;
         }
         const current = { id : data["id"], name : data["name"], image : data["images"][0]["url"], active : true, following : false};
         insertArtist(current);
+    } else if ( this.status === 400 ) {
+        console.log(name);
+        searchArtist();
     }
     else if ( this.status === 401 ){
         refreshToken();
     }
     else {
         console.error(this.responseText);
-        showError(true, "400","Artist not found: Provided ID or URL is invalid. Artist name won't work, use URL instead (In Spotify click share and copy link to artist) ");
+        showError(true, "Error","Some error occured");
     }
+}
+
+function searchArtist() {
+    callApi("GET", searchartist+searchq, null, function () {
+        if ( this.status === 200 ){
+            let data = JSON.parse(this.responseText);
+            console.log(data);
+            data = data.artists.items[0];
+            const name = data["name"];
+            console.log(data);
+            if (name == null) {
+                console.warn("Artist not found");
+                return;
+            }
+            const current = { id : data["id"], name : data["name"], image : data["images"][0]["url"], active : true, following : false};
+            insertArtist(current);
+        }
+        else if ( this.status === 401 ){
+            refreshToken();
+        }
+        else {
+            console.error(this.responseText);
+            showError(true, "400","Artist not found: Provided ID or URL is invalid. Artist name won't work, use URL instead (In Spotify click share and copy link to artist) ");
+        }
+    });
 }
 
 /* add new artist to list */
