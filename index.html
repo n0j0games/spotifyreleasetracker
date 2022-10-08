@@ -31,7 +31,7 @@
     <section id="authorize">
         <p id="welcomeTitle">Spotify Release Tracker</p>
         <p id="description">Sign in with your Spotify account to get a list of new releases for each artist you follow</p>
-        <button id="authbutton" onclick="requestAuthorization()">Authorize</button>
+        <button id="authbutton" onclick="requestAuthorization()"><i class="fa-brands fa-spotify"></i> Login with Spotify</button>
         <img id="preview" src="images/preview.png" alt="">
         <p id="footer">We are not related to Spotify AB or any of it´s partners in any way. &nbsp;&#8226;&nbsp;
             Made by <a href="https://noahschuette.de">Noah Schütte</a> <br>
@@ -61,18 +61,24 @@
     </div>-->
     <section id="artistPopup">
         <ul id="artistFG">
-            <button onclick="enableArtistsDiv(false)" id="artistClose"><i class="fa-solid fa-xmark"></i></button>
+            <div class="artistsManageDiv">
+                <button onclick="enableArtistsDiv(false)" id="artistClose"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="syncArtists()" id="artistSync">Sync with spotify</button>
+                <button onclick="resetArtists()" id="artistReset">Reset Artists</button>
+            </div>
             <li id="artistsTopContent">
                 <div class="artistsManageDiv" id="artistAdd">
-                    <input id="artistAddInput" type="text" placeholder="Search for artist or enter directlink">
+                    <input id="artistAddInput" type="text" placeholder="Search for artist or enter directlink" >
                     <button onclick="addArtist()" id="artistAddBtn">Add</button>
-                </div>
-                <div class="artistsManageDiv">
-                    <button onclick="syncArtists()" id="artistSync">Sync with spotify</button>
-                    <button onclick="resetArtists()" id="artistReset">Reset Artists</button>
                 </div>
             </li>
         </ul>
+    </section>
+    <!-- album popup -->
+    <section id="albumPopup">
+        <div>
+            test
+        </div>
     </section>
 </body>
 </html>

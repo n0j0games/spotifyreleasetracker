@@ -87,7 +87,7 @@ p {
 #authorize {
     width: 100vw;
     height: calc(100vh - 50px);
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -95,8 +95,8 @@ p {
 }
 
 #preview {
-    width: 70%;
-    max-width: 800px;
+    height: 50%;
+    max-height: 500px;
     border-radius: 25px;
     border: 2px solid var(--green);
 }
@@ -282,6 +282,7 @@ i {
     background: var(--green);
     color: black;
     border: 1px solid var(--green);
+    cursor: pointer;
 }
 
 /*
@@ -311,7 +312,7 @@ hr {
     border: solid 1px var(--highlight);
 }
 
-#artistPopup {
+#artistPopup, #albumPopup {
     position: fixed;
     top: 0;
     left: 0;
@@ -448,6 +449,24 @@ hr {
  */
 @media only screen and (max-width: 700px) {
 
+    #authorize {
+        justify-content: flex-start;
+        text-align: center;
+
+    }
+
+    .inactiveBtn:hover {
+        background: transparent;
+        color: white;
+        border: 1px solid white;
+    }
+
+    .activeBtn:hover  {
+        background: transparent;
+        color: var(--green);
+        border: 1px solid var(--green);
+    }
+
     #mainTitle {
         position: relative;
         top: 0;
@@ -466,7 +485,7 @@ hr {
         justify-content: center;
     }
 
-    #artistPopup {
+    #artistPopup, #albumPopup {
         background-color: #181818;
     }
 

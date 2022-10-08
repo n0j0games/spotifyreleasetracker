@@ -11,23 +11,18 @@ const followedartists = "https://api.spotify.com/v1/me/following?type=artist&lim
 const artistprofile = "https://api.spotify.com/v1/artists/";
 const searchartist = "https://api.spotify.com/v1/search?type=artist&q=";
 const userprofile = "https://api.spotify.com/v1/me";
+let username = "";
 
 const artistDivHTML = document.getElementById("artistFG").innerHTML;
 const releasesDivHTML = document.getElementById("releases").innerHTML;
 
-// DO FIRST: SOLVE KNOWN BUGS
-// TODO refactoring/remanaging releases/no-releases view
-    // TODO keine artists wird nicht angezeigt, wenn zum beginn keine artists & artistids nicht gespeichert
-// TODO wenn mehrere accounts speichert er artists falsch
-// TODO bug wenn key ablöuft (nicht überprüft)
-// TODO following wird nicht richtig angezeigt?
-
-// BUGS WITH UNKNOWN REASON
-// TODO maybe sort funktioniert nicht
-// TODO Fehler beim anklicken/ausfüllen von feature-only
-
-// DO AFTER
-// TODO neben logout full reset function (alle localstorage löschen & abmelden von api?
+document.getElementById("artistAddInput")
+    .addEventListener("keyup", function(event) {
+        event.preventDefault();
+        if (event.key === 'Enter') {
+            addArtist();
+        }
+    });
 
 /*
     Main = On Page Load
@@ -58,7 +53,7 @@ window.onPageLoad = function (){
             document.getElementById("app").style.display = 'block';
             document.getElementById("authorize").style.display = 'none';
             showUserInformation();
-            loadArtists();
+            //loadArtists(); wird nach showUserInformation aufgerufen in showUserInformation();
         }
     }
 }
@@ -71,8 +66,8 @@ let artistids = [];
 let total = 0;
 
 function loadArtists(){
-    if (localStorage.getItem("artists") !== null) {
-        artistids = JSON.parse(localStorage.getItem("artists"));
+    if (localStorage.getItem("artists"+username) !== null) {
+        artistids = JSON.parse(localStorage.getItem("artists"+username));
         console.log("loaded artists ", artistids);
         if (artistids.length === 0) {
             noSongsAvailable();
@@ -164,14 +159,14 @@ window.removeArtist = function (nr) {
         if (artistids[nr].name === artistids[k].name)
             artistids.splice(nr, 1);
     }
-    localStorage.setItem("artists", JSON.stringify(artistids));
+    localStorage.setItem("artists"+username, JSON.stringify(artistids));
     refreshAlbums();
     updateArtistDiv();
 }
 
 /* save artist list to localstorage & refresh div */
 function saveArtistList() {
-    localStorage.setItem("artists", JSON.stringify(artistids));
+    localStorage.setItem("artists"+username, JSON.stringify(artistids));
     const popup = document.getElementById("artistPopup");
     refreshAlbums();
 }
@@ -306,8 +301,11 @@ window.exportArtists = function() {
 
 // reset artists
 window.resetArtists = function() {
-    localStorage.removeItem("artists");
-    loadArtists();
+    let confirmAction = confirm("Are you sure you want to reset your artists?");
+    if (confirmAction) {
+        localStorage.removeItem("artists"+username);
+        loadArtists();
+    }
 }
 
 window.syncArtists = function() {
@@ -656,6 +654,7 @@ function handleUserProfile() {
         let data = JSON.parse(this.responseText);
         usermarket = data["country"];
         const displayname = data["display_name"];
+        username = data.id;
         const loginImg = document.getElementById("loginImg");
         const loginUser = document.getElementById("loginUser");
         if (data["images"].length !== 0)
@@ -664,6 +663,8 @@ function handleUserProfile() {
         document.getElementById("logoutBtn").style.display = 'block';
         document.getElementById("artistBtn").style.display = 'block';
         console.log(`Logged in as ${displayname}`);
+        //LOADING ARTISTS ETC.
+        loadArtists();
     }
     else if ( this.status === 401 ){
         refreshToken();
