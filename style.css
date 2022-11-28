@@ -90,22 +90,19 @@ p {
     display: none;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     margin: 0;
 }
 
 #preview {
-    height: 50%;
-    max-height: 500px;
-    border-radius: 25px;
-    border: 2px solid var(--green);
+    height: 600px;
 }
 
 #welcomeTitle {
     font-weight: 700;
     font-size: 30px;
     color: var(--green);
-    margin: 20px;
+    margin: 50px 20px 20px 20px;
     /*text-shadow: 0 3px 0 var(--green2), 0 6px 0 var(--brown);*/
 }
 
@@ -297,13 +294,16 @@ i {
 }
 
 #footer {
+    position: fixed;
+    bottom: 0;
     color: var(--footer);
     font-size: 14px;
     width: 100%;
-    margin: 20px;
+    padding: 20px;
     text-align: center;
     font-family: 'Barlow', sans-serif;
     font-weight: 300;
+    background-color: var(--background);
 }
 
 hr {
@@ -388,6 +388,7 @@ hr {
     border-radius: 2px;
     margin: 5px;
     text-transform: capitalize;
+    height: 30px;
 }
 
 .artistsManageDiv {

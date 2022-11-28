@@ -68,7 +68,7 @@ let total = 0;
 function loadArtists(){
     if (localStorage.getItem("artists"+username) !== null) {
         artistids = JSON.parse(localStorage.getItem("artists"+username));
-        console.log("loaded artists ", artistids);
+        //console.log("loaded artists ", artistids);
         if (artistids.length === 0) {
             noSongsAvailable();
             return;
@@ -130,7 +130,7 @@ function updateArtistIDs(items) {
         const current = { id : items[x]["id"], name : items[x]["name"], image : items[x]["images"][0]["url"], active : true, following : true};
         let inList = false;
         for (let y in artistids) {
-            console.log("updateArt",artistids[y].id,current.id);
+            //console.log("updateArt",artistids[y].id,current.id);
             if (artistids[y].id === current.id) {
                 if (!artistids[y].following) {
                     artistids[y].following = true;
@@ -301,7 +301,7 @@ window.exportArtists = function() {
 
 // reset artists
 window.resetArtists = function() {
-    let confirmAction = confirm("Are you sure you want to reset your artists?");
+    let confirmAction = confirm("Are you sure you want to reset your artists? This will remove any artist except your followed artists on spotify");
     if (confirmAction) {
         localStorage.removeItem("artists"+username);
         loadArtists();
@@ -332,7 +332,7 @@ let results = [];
 let artists = [];
 
 function refreshAlbums() {
-    console.log("refreshing album for", artistids);
+    //console.log("refreshing album for", artistids);
     results = [];
     artists = [];
     total = 0;
@@ -439,7 +439,6 @@ let usermarket = "DE";
 
 function showResults() {
     resetFilterOverlay();
-    console.log("Results", results);
     if (results.length === 0) {
         document.getElementById("releases").innerHTML = releasesDivHTML;
         noSongsAvailable();
@@ -461,7 +460,6 @@ function showResults() {
         if (name.length >= 60) {
             name = name.substring(0, 59) + "...";
         }
-        //onclick showOverlay(x)
         if (isFeature) {
             htmlstring += `<a style="background-image: url(' ${results[x]["image"]}')" href='${results[x]["href"]}'
                 target="_blank" class="singleRelease isFeature ${results[x]['type'].toLowerCase()}">`
@@ -504,16 +502,10 @@ function dateToDEFormat(date, releaseDate) {
     return releaseDate;
 }
 
+/* sort by date & main artist */
 function sortResults(temp) {
-    temp.sort(function(a, b) {
-        return b.date - a.date;
-    });
-    temp.sort(function(a, b) {
-        return a.mainartist - b.mainartist;
-    });
-    temp.sort(function(a, b) {
-        return a.name - b.name;
-    });
+    temp.sort((a,b) => a.mainartist.localeCompare(b.mainartist));
+    temp.sort((a,b) => b.date.getTime() - a.date.getTime());
     return temp;
 }
 
