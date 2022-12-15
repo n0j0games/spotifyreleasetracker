@@ -106,16 +106,32 @@ p {
     /*text-shadow: 0 3px 0 var(--green2), 0 6px 0 var(--brown);*/
 }
 
-#mainTitle {
+#mainTitleDiv {
     z-index: 1;
     position: absolute;
     left: 20px;
     top: 20px;
     font-weight: 700;
     font-size: 30px;
-    color: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-left: 20px;
+    color: var(--green);
+}
+
+#spotifyLogo {
+    width: 120px;
+    margin-top: 9px;
+}
+
+#mainTitle {
     text-shadow: 0 3px 0 var(--green1), 0 6px 0 var(--brown);
+}
+
+#mainTitleFor {
+    margin: 9px 7px 0 7px;
+    font-size: 16px;
 }
 
 #description {
@@ -468,12 +484,11 @@ hr {
         border: 1px solid var(--green);
     }
 
-    #mainTitle {
+    #mainTitleDiv {
         position: relative;
         top: 0;
         left: 0;
         margin: 15px;
-        width: calc(100% - 30px);
         text-align: center;
     }
 

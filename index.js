@@ -11,6 +11,7 @@ const followedartists = "https://api.spotify.com/v1/me/following?type=artist&lim
 const artistprofile = "https://api.spotify.com/v1/artists/";
 const searchartist = "https://api.spotify.com/v1/search?type=artist&q=";
 const userprofile = "https://api.spotify.com/v1/me";
+const albumTracks = "https://api.spotify.com/v1/albums/"
 let username = "";
 
 const artistDivHTML = document.getElementById("artistFG").innerHTML;
@@ -402,6 +403,20 @@ function collectReleases(data) {
             if (tempname === name && tempartist === artists)
                 duplicate = true;
         }
+        //TODO here (feature list for album), wsl nach untern verschieben
+        /*let trackArtists = []
+        if (type === "album") {
+            callApi("GET", albumTracks + item["id"] + "/tracks", null, function () {
+                let tracks = JSON.parse(this.responseText)["items"]
+                for (let i=0; i<tracks.length; i++) {
+                    for (let j=0; j<tracks[i]["artists"].length; j++) {
+                        if (!trackArtists.includes(tracks[i]["artists"][j]["name"]))
+                            trackArtists.push(tracks[i]["artists"][j]["name"])
+                    }
+                }
+                console.log(trackArtists)
+            } );
+        }*/
         if (intimespan && !duplicate && !fromVariousArtists) {
             results.push({name, image, date, href, release, type, mainartist, artists, tracks, markets, advanced : item});
         }
@@ -445,6 +460,7 @@ function showResults() {
         return;
     }
     results = sortResults(results);
+    console.log(results)
     let htmlstring = "";
     for (const x in results) {
         let isFeature = true;
