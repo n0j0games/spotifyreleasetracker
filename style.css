@@ -427,6 +427,7 @@ hr {
 
 #daysInput, #marketplaceInput {
     padding: 0;
+    width: 40px;
 }
 
 
