@@ -1,6 +1,5 @@
 import keys from "./apikey.js";
 
-const timeSpan = 30; //max days between today and release date
 let redirect_uri = keys.uri;
 //let redirect_uri = "https://releasr.netlify.app/"
 let client_id = keys.id;
@@ -32,6 +31,9 @@ document.getElementById("artistAddInput")
 let access_token = "";
 let refresh_token = "";
 
+let timeSpan = 30; //max days between today and release date
+let usermarket = null;
+
 window.onPageLoad = function (){
     const location = window.location.href.split("?")[0];
     if (location !== keys.uri) {
@@ -60,6 +62,71 @@ window.onPageLoad = function (){
 }
 
 /*
+    Show User Information
+ */
+
+function showUserInformation() {
+    callApi("GET", userprofile, null, handleUserProfile );
+}
+
+function handleUserProfile() {
+    if ( this.status === 200 ){
+        loadSettings();
+        let data = JSON.parse(this.responseText);
+        if (usermarket === null)
+            usermarket = data["country"];
+        const displayname = data["display_name"];
+        username = data.id;
+        const loginImg = document.getElementById("loginImg");
+        const loginUser = document.getElementById("loginUser");
+        if (data["images"].length !== 0)
+            loginImg.src = data["images"][0]["url"];
+        loginUser.innerHTML = `Logged in as <p id="loginUserHighlight">${displayname}</p>`
+        document.getElementById("logoutBtn").style.display = 'block';
+        document.getElementById("settingsBtn").style.display = 'block';
+        console.log(`Logged in as ${displayname}`);
+        //LOADING ARTISTS ETC.
+        loadArtists();
+    }
+    else if ( this.status === 401 ){
+        refreshToken();
+    }
+    else {
+        console.error(this.responseText);
+        showError(true, this.status, "Unknown error, try reload page. Error context:\n" + this.responseText);
+    }
+}
+
+window.saveSettings = function() {
+    const input = document.getElementById("daysInput");
+    const regioninput = document.getElementById("marketplaceInput");
+    const time = input.value;
+    const region = regioninput.value;
+    if (time !== null) {
+        if (isNaN(time) || time < 0 || time > 90) {
+            showError(true, "Could not save settings", "Input is not a number")
+        } else {
+            localStorage.setItem("timeSpan", time);
+            location.reload();
+        }
+    }
+    if (region !== null) {
+        localStorage.setItem("marketplace", region);
+    }
+}
+
+function loadSettings() {
+    const temp = localStorage.getItem("timeSpan");
+    const region = localStorage.getItem("marketplace");
+    if (temp !== null) {
+        timeSpan = temp;
+    }
+    if (region !== null) {
+        usermarket = region;
+    }
+}
+
+/*
     New Artists Section
  */
 
@@ -68,8 +135,12 @@ let total = 0;
 
 function loadArtists(){
     if (localStorage.getItem("artists"+username) !== null) {
-        artistids = JSON.parse(localStorage.getItem("artists"+username));
-        //console.log("loaded artists ", artistids);
+        try {
+            artistids = JSON.parse(localStorage.getItem("artists"+username));
+        } catch (e) {
+            showError(true, "Could not load artists", e)
+        }
+        console.log("loaded artists ", artistids);
         if (artistids.length === 0) {
             noSongsAvailable();
             return;
@@ -131,7 +202,7 @@ function updateArtistIDs(items) {
         const current = { id : items[x]["id"], name : items[x]["name"], image : items[x]["images"][0]["url"], active : true, following : true};
         let inList = false;
         for (let y in artistids) {
-            //console.log("updateArt",artistids[y].id,current.id);
+            console.log("updateArtist",artistids[y].id,current.id);
             if (artistids[y].id === current.id) {
                 if (!artistids[y].following) {
                     artistids[y].following = true;
@@ -155,7 +226,7 @@ window.hideArtist = function (nr) {
 }
 
 window.removeArtist = function (nr) {
-    console.log(artistids);
+    console.log("Remove", artistids);
     for (let k in artistids) {
         if (artistids[nr].name === artistids[k].name)
             artistids.splice(nr, 1);
@@ -168,11 +239,12 @@ window.removeArtist = function (nr) {
 /* save artist list to localstorage & refresh div */
 function saveArtistList() {
     localStorage.setItem("artists"+username, JSON.stringify(artistids));
-    const popup = document.getElementById("artistPopup");
+    //const popup = document.getElementById("artistPopup");
     refreshAlbums();
 }
 
 let artistDivEnabled = false;
+let settingsDivEnabled = false;
 
 window.enableArtistsDiv = function (enable) {
     const popup = document.getElementById("artistPopup");
@@ -181,11 +253,30 @@ window.enableArtistsDiv = function (enable) {
         popup.style.display = "flex";
         document.body.style.overflow = "hidden";
         updateArtistDiv();
-    }
-    else {
+    } else {
         document.body.style.overflow = "auto";
         popup.style.display = "none";
     }
+}
+
+window.enableSettingsDiv = function (enable) {
+    const popup = document.getElementById("settingsPopup");
+    settingsDivEnabled = !settingsDivEnabled;
+    if (enable) {
+        popup.style.display = "flex";
+        document.body.style.overflow = "hidden";
+        updateSettingsDiv();
+    } else {
+        document.body.style.overflow = "auto";
+        popup.style.display = "none";
+    }
+}
+
+function updateSettingsDiv() {
+    const input = document.getElementById("daysInput");
+    const region = document.getElementById("marketplaceInput");
+    input.value = timeSpan
+    region.value = usermarket
 }
 
 function updateArtistDiv() {
@@ -219,7 +310,7 @@ function updateArtistDiv() {
 let searchq = null;
 window.addArtist = function() {
     searchq = null;
-    console.log("addArtist");
+    console.log("addArtist Window");
     const input = document.getElementById("artistAddInput");
     searchq = input.value;
     input.value = "";
@@ -296,8 +387,23 @@ function insertArtist(current) {
 }
 
 // exüprt artists for debug purpose
-window.exportArtists = function() {
-    console.log(JSON.stringify(artistids));
+window.exportArtists = async () => {
+    try {
+        await navigator.clipboard.writeText(JSON.stringify((artistids)));
+        console.log('Content copied to clipboard');
+        showError(true, 'Copied to clipbard', "")
+    } catch (err) {
+        showError(true, 'Failed to copy', err)
+    }
+}
+
+window.importArtists = function() {
+    const input = document.getElementById("importArtistsInput");
+    let confirmAction = confirm("Are you sure you want override your artists?");
+    if (confirmAction) {
+        localStorage.setItem("artists"+username, input.value);
+        location.reload();
+    }
 }
 
 // reset artists
@@ -305,7 +411,7 @@ window.resetArtists = function() {
     let confirmAction = confirm("Are you sure you want to reset your artists? This will remove any artist except your followed artists on spotify");
     if (confirmAction) {
         localStorage.removeItem("artists"+username);
-        loadArtists();
+        location.reload();
     }
 }
 
@@ -333,7 +439,7 @@ let results = [];
 let artists = [];
 
 function refreshAlbums() {
-    //console.log("refreshing album for", artistids);
+    console.log("refreshing album for", artistids);
     results = [];
     artists = [];
     total = 0;
@@ -344,6 +450,7 @@ function refreshAlbums() {
     total = artistids.length;
     for (let x in artistids) {
         if (artistids[x].active) {
+            console.log("Collecting albums for artist", artistids[x].name)
             getAlbums(artistids[x].id);
         } else {
             total--; //Minus total, bc artist skipped
@@ -443,14 +550,14 @@ function inTimeSpan(date) {
 
 function noSongsAvailable() {
     document.getElementById("noartists").style.display = "block";
-    document.getElementById("filter").style.display = "none";
+    document.getElementById("albumsbtn").style.display = "none";
+    document.getElementById("singlebtn").style.display = "none";
+    document.getElementById("featureBtn").style.display = "none";
 }
 
 /*
     Results & Filter Functions
  */
-
-let usermarket = "DE";
 
 function showResults() {
     resetFilterOverlay();
@@ -460,7 +567,7 @@ function showResults() {
         return;
     }
     results = sortResults(results);
-    console.log(results)
+    console.log("Found albums", results);
     let htmlstring = "";
     for (const x in results) {
         let isFeature = true;
@@ -646,40 +753,6 @@ function checkZeroElems(){
         document.getElementById("emptyfilter").style.display = "block";
     } else {
         document.getElementById("emptyfilter").style.display = "none";
-    }
-}
-
-/*
-    Show User Information
- */
-
-function showUserInformation() {
-    callApi("GET", userprofile, null, handleUserProfile );
-}
-
-function handleUserProfile() {
-    if ( this.status === 200 ){
-        let data = JSON.parse(this.responseText);
-        usermarket = data["country"];
-        const displayname = data["display_name"];
-        username = data.id;
-        const loginImg = document.getElementById("loginImg");
-        const loginUser = document.getElementById("loginUser");
-        if (data["images"].length !== 0)
-            loginImg.src = data["images"][0]["url"];
-        loginUser.innerHTML = `Logged in as <p id="loginUserHighlight">${displayname}</p>`
-        document.getElementById("logoutBtn").style.display = 'block';
-        document.getElementById("artistBtn").style.display = 'block';
-        console.log(`Logged in as ${displayname}`);
-        //LOADING ARTISTS ETC.
-        loadArtists();
-    }
-    else if ( this.status === 401 ){
-        refreshToken();
-    }
-    else {
-        console.error(this.responseText);
-        showError(true, this.status, "Unknown error, try reload page. Error context:\n" + this.responseText);
     }
 }
 
