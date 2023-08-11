@@ -391,7 +391,7 @@ window.exportArtists = async () => {
     try {
         await navigator.clipboard.writeText(JSON.stringify((artistids)));
         console.log('Content copied to clipboard');
-        showError(true, 'Copied to clipbard', "")
+        showMessage(true, 'Copied to clipbard', "")
     } catch (err) {
         showError(true, 'Failed to copy', err)
     }
@@ -856,6 +856,20 @@ function callApi(method, url, body, callback){
 /*
     Error Handling
  */
+
+window.showMessage = function(enable, title, subtitle) {
+    const titleElem = document.getElementById("errorTitle");
+    const subtitleElem = document.getElementById("errorSubtitle");
+    const errorElem = document.getElementById("error");
+    if (!enable) {
+        errorElem.style.display = "none";
+        return;
+    }
+    errorElem.style.display = "flex";
+    errorElem.style.background = "#777777"
+    titleElem.innerHTML = title;
+    subtitleElem.innerHTML = subtitle;
+}
 
 window.showError = function(enable, title, subtitle) {
     const titleElem = document.getElementById("errorTitle");
