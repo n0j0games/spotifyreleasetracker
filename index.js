@@ -70,6 +70,7 @@ function showUserInformation() {
 }
 
 function handleUserProfile() {
+    console.log("API STATUS", this.status);
     if ( this.status === 200 ){
         loadSettings();
         let data = JSON.parse(this.responseText);
@@ -162,6 +163,7 @@ function getUsersArtistsNew(after) {
 }
 
 function handleGetUsersArtistsNew() {
+    console.log("API STATUS", this.status);
     if ( this.status === 200 ){
         let data = JSON.parse(this.responseText);
         const items = data["artists"]["items"];
