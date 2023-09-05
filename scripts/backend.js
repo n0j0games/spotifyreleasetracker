@@ -33,6 +33,10 @@ function getMarket() {
     return user.market;
 }
 
+function getTimespan() {
+    return user.timespan;
+}
+
 /* Login, request user Info */
 function login(onLogin) {
     api.call("GET", "user_profile", null, onLogin,
@@ -210,7 +214,7 @@ function insertArtist(current) {
 function saveArtists() { 
     localStorage.setItem("artists"+user.id, JSON.stringify(artists));
     targetProxy.artists = artists;
-    refreshAlbums();
+    //refreshAlbums();
 }
 
 // Hide artist, called from frontend
@@ -264,6 +268,16 @@ function syncArtists() {
             logger.error, "Could not load artists" );
 }
 
+function getActiveArtists() {
+    let c = 0
+    for (let x in artists) {
+        if (artists[x].active) {
+            c++;
+        }
+    }
+    return c;
+}
+
 /*
     ALBUM SECTION
 */
@@ -273,23 +287,27 @@ let total_ = 0
 
 // Refresh Albums, called after artists window closed and after first artist load
 function refreshAlbums() {
+    results = [];
     if (artists.size === 0) {
         targetProxy.albums = [];
         return
     }
-    total_ = artists.length
+    
+    total_ = 0
+    let active_artists = [];
     for (let x in artists) {
         if (artists[x].active) {
-            const param = `${artists[x].id}/albums?limit=50&include_groups=album,single`
-            api.call("GET", "artist", param, albumCallback, logger.error, "Could not load albums for artist")
-        } else {
-            total_--;        
-            if (total_ === 0) {
-                results = sortResults(results);
-                targetProxy.albums = results;
-                return;
-            }            
+            total_++;
+            active_artists.push(artists[x]);
         }
+    }
+    if (total_ === 0) {
+        targetProxy.albums = [];
+        return;
+    }
+    for (let x in active_artists) {
+        const param = `${active_artists[x].id}/albums?limit=50&include_groups=album,single`
+        api.call("GET", "artist", param, albumCallback, logger.error, "Could not load albums for artist")
     }
 }
 
@@ -382,4 +400,24 @@ function filterAlbums(filters) {
     targetProxy.albums = results;
 }
 
-export default {filterAlbums, getMarket, refreshAlbums, exportArtists, saveSettings, removeArtist, hideArtist, syncArtists, resetArtists, importArtists, addArtist, loadArtists, auth, onLogin, handleRedirect, login, logout, getAccessToken}
+export default {getActiveArtists,
+    getTimespan,
+    filterAlbums,
+    getMarket,
+    refreshAlbums,
+    exportArtists,
+    saveSettings,
+    removeArtist,
+    hideArtist,
+    syncArtists,
+    resetArtists,
+    importArtists,
+    addArtist,
+    loadArtists,
+    auth,
+    onLogin,
+    handleRedirect,
+    login,
+    logout,
+    getAccessToken
+}

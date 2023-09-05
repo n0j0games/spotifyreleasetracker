@@ -262,6 +262,16 @@ i {
     letter-spacing: 1px;
 }
 
+#search_query_info {
+    color: var(--lowlight);
+    font-size: 14px;
+    font-weight: 300;
+    margin: 0 20px;
+    text-align: center;
+    padding: 10px;
+    letter-spacing: 1px;
+}
+
 .filter {
     width: calc(100% - 20px);
     padding: 10px;

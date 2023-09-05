@@ -34,6 +34,7 @@ const html = {
         feature : document.getElementById("featureBtn")
     },
     no_artists : document.getElementById("noartists"),
+    search_query_info : document.getElementById("search_query_info")
 }
 
 /*
@@ -260,16 +261,16 @@ function updateAlbumsDiv() {
         return;
     }
 
+    html.search_query_info.innerHTML = `Showing releases for ${backend.getActiveArtists()} artists in the last ${backend.getTimespan()} days`;
+
     // If no albums available: show empty list
     if (target_.albums.length === 0) {
-        html.no_artists.style.display = "block"
-        //html.filters.album.style.display = "none"
-        //html.filters.single.style.display = "none"
-        //html.filters.feature.style.display = "none"
+        html.releases.item.innerHTML = html.releases.inner;
+        html.releases.item.children[0].style.display = "block";
         return;
     }
 
-    // TODO hier war sonst reset filters
+    //resetFilterOverlay();
 
     console.log(target_.albums)
 
@@ -309,16 +310,15 @@ function updateAlbumsDiv() {
         }
         htmlstring += `<p class="releaseType"><i class="fas fa-compact-disc"></i> ${result.type.toUpperCase()}</p>`;
         if (!result.markets.includes(backend.getMarket())) {
-            htmlstring += `<p class="releaseUnreleased"><i class="fa-solid fa-clock"></i> UNAVAILABLE AT YOUR MARKET</p>`;
+            htmlstring += `<p class="releaseUnreleased"><i class="fa-solid fa-clock"></i> UNRELEASED</p>`;
         } else {
             htmlstring += `<p class="releaseDate"><i class="fas fa-calendar"></i> ${dateToDEFormat(result.release_date,result.real_date)}</p>`;
         }
         htmlstring += `</div></div></a>`;
     }
     if (htmlstring === "") {
-        console.log("leer")
         html.releases.item.innerHTML = html.releases.inner;
-        html.no_artists.style.display = "block"        
+        html.releases.item.children[0].style.display = "block";     
     } else {
         html.releases.item.innerHTML = html.releases.inner + htmlstring;
     }
@@ -402,7 +402,5 @@ window.toggleSingleFilter = function() {
     updateFilterOverlay();
     backend.filterAlbums(filters);
 }
-
-// TODO: Sortieren klappt noch nicht
 
 export default targetProxy;

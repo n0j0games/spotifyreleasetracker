@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>releasr - Spotify Release Tracker</title>
-    <script type="module" src="index.js"></script>
+    <script type="module" src="scripts/main.js"></script>
+    <script type="module" src="scripts/logger.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@100;300;400;500;700;800;900&amp;display=swap" rel="stylesheet">
@@ -17,7 +18,7 @@
             <p id="errorTitle">Title</p>
             <p id="errorSubtitle">Subtitle</p>
         </div>
-        <i onclick="showError(false, null, null)" class="fa-solid fa-xmark"></i>
+        <i onclick="close_popup()" class="fa-solid fa-xmark"></i>
     </div>
     <!-- User-Info Section -->
     <div id="mainTitleDiv">
@@ -45,25 +46,19 @@
     <!-- App Section -->
     <section id="app">
         <p id="title">Latest Releases</p>
+        <p id="search_query_info">Showing releases for X artists in the last Y days</p>
         <div id="filter" class="filter">
-            <button id="albumsbtn" class="inactiveBtn" onclick="toggleAlbumType(true)">Albums</button>
-            <button id="singlebtn" class="inactiveBtn" onclick="toggleAlbumType(false)">Singles</button>
+            <button id="albumsbtn" class="inactiveBtn" onclick="toggleAlbumFilter()">Albums</button>
+            <button id="singlebtn" class="inactiveBtn" onclick="toggleSingleFilter(false)">Singles</button>
             <button id="featureBtn" class="inactiveBtn" onclick="toggleFeatures()">Hide Features</button>
             <button id="artistNewBtn" class="inactiveBtn" onclick="enableArtistsDiv(true)">Your Artists</button>
         </div>
         <div id="releases">
-            <p id="noartists">Either you're not following anyone on Spotify, or there aren't any recent releases for your artists.<br>
-            Edit your artists by clicking on the button above</p>
+            <p id="noartists">No releases found for your selected time span, artists and filters.<br>Try to add more artists in the "Your Artists" section</p>
             <p id="emptyfilter">No recent releases found for your artists. Try another filter.</p>
         </div>
     </section>
-    <!--<div id="overlay" onclick="hideOverlay()">
-        <div id="innerOverlay">
-            <img id="overlayImg" src='' alt="">
-            <p id="overlayTitle">Test</p>
-            <p id="overlayAuthor">Test</p>
-        </div>
-    </div>-->
+    <!-- Artist Management -->
     <section id="artistPopup">
         <ul id="artistFG">
             <div class="manageDiv">
@@ -78,7 +73,7 @@
             </li>
         </ul>
     </section>
-    <!-- settings -->
+    <!-- Settings -->
     <section id="settingsPopup">
         <ul id="settingsFG">
             <li class="manageDiv">
@@ -114,12 +109,6 @@
                 Made by <a href="https://noahschuette.github.io">Noah</a></p>
             </li>
         </ul>
-    </section>
-    <!-- album popup -->
-    <section id="albumPopup">
-        <div>
-            test
-        </div>
     </section>
 </body>
 </html>
