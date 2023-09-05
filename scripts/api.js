@@ -1,3 +1,8 @@
+/**
+ * Spotify API
+ * @class
+**/
+
 const urls = {
     authorize: 'https://accounts.spotify.com/authorize',
     token: 'https://accounts.spotify.com/api/token',
@@ -6,18 +11,18 @@ const urls = {
     search_artist: 'https://api.spotify.com/v1/search?type=artist&q=',
     user_profile: 'https://api.spotify.com/v1/me',
     album_tracks: 'https://api.spotify.com/v1/albums/',
+    artist: 'https://api.spotify.com/v1/artists/',
 }
 
 /* Serves as the base for the Spotify API */
 class SpotifyAPI {
     constructor(client_id, client_secret, redirect_uri, error_callback) {
       this.access_token = localStorage.getItem("access_token");
-      this.refreshToken = null;
       this.client_id = client_id;
       this.client_secret = client_secret;
       this.redirect_uri = redirect_uri;
       this.error_callback = error_callback
-      console.log("access_token", this.access_token, "refresh_token", this.refreshToken, this.client_id, this.client_secret, this.redirect_uri)
+      this.show_api_calls = localStorage.getItem("show_api_calls");
     }
 
     get access_token() {
@@ -29,21 +34,33 @@ class SpotifyAPI {
     }
 
     /* Calls the API */
-    call(method, url, body, true_callback, error_callback, error_message) {
-      let xhr = new XMLHttpRequest();
-      xhr.open(method, urls[url], true);
+    call(method, url, param, true_callback, error_callback, error_message) {      
+      let self = this;
+      let xhr = new XMLHttpRequest();      
+      let body = null;
+      let url_ = urls[url];
+      if (url_ === undefined) {
+        console.error("Wrong url", url, urls);
+        return;      
+      }
+      if (param !== null) {
+        url_ += param;
+      }
+      xhr.open(method, url_, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.setRequestHeader('Authorization', 'Bearer ' + this.access_token);
       xhr.send(body);
-      xhr.onerror = console.warn("XHR:", xhr);
-      xhr.onload = function(){
+      //xhr.onerror = console.warn("XHR:", xhr);
+      xhr.onload = function() {
+        if (self.show_api_calls === "true")
+          console.log("Called", method, url_, this.status)
         if (this.status == 200) {
           true_callback(this.response);
         } else if (this.status == 401) {
-          refreshToken();
+          console.log(self)
+          refreshToken(self);
         } else {
-          console.error(this.status, this.responseText);
-          error_callback(true, this.status, error_message);
+          error_callback(this.status, error_message);
         }
       }
     }
@@ -51,7 +68,7 @@ class SpotifyAPI {
     /* AUTHORIZATION */
 
     handleRedirect(callback) {
-      let code = this.getCode();
+      let code = getCode();
       this.fetchAccessToken( code );
       callback();
     }
@@ -63,14 +80,6 @@ class SpotifyAPI {
       body += "&client_id=" + this.client_id;
       body += "&client_secret=" + this.client_secret;
       this.callAuthorizationApi(body);
-    }
-
-    refreshToken() {
-      this.refresh_token = localStorage.getItem("refresh_token");
-      let body = "grant_type=refresh_token";
-      body += "&refresh_token=" + refresh_token;
-      body += "&client_id=" + client_id;
-      callAuthorizationApi(body);
     }
 
     callAuthorizationApi(body){
@@ -90,7 +99,6 @@ class SpotifyAPI {
               localStorage.setItem("access_token", data.access_token);
           }
           if ( data.refresh_token  != undefined ){
-              this.refresh_token = data.refresh_token;
               localStorage.setItem("refresh_token", data.refresh_token);
           }
           location.reload();
@@ -102,16 +110,7 @@ class SpotifyAPI {
       }
     }
 
-    getCode() {
-      let code = null;
-      const queryString = window.location.search;
-      if ( queryString.length > 0 ){
-          const urlParams = new URLSearchParams(queryString);
-          code = urlParams.get('code')
-      }
-      return code;
-    }
-
+    
     /* Authorize user to app */
     requestAuthorization(callback) {
       let url = urls.authorize;
@@ -123,6 +122,25 @@ class SpotifyAPI {
       callback(url);
     }
 
+}
+
+function getCode() {
+  let code = null;
+  const queryString = window.location.search;
+  if ( queryString.length > 0 ){
+      const urlParams = new URLSearchParams(queryString);
+      code = urlParams.get('code')
+  }
+  return code;
+}
+
+function refreshToken(self) {
+  console.log("Refreshing Token")
+  let refresh_token = localStorage.getItem("refresh_token");
+  let body = "grant_type=refresh_token";
+  body += "&refresh_token=" + refresh_token;
+  body += "&client_id=" + self.client_id;
+  self.callAuthorizationApi(body);
 }
 
 export default SpotifyAPI;
