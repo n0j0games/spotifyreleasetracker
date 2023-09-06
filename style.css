@@ -10,6 +10,7 @@
     --footer: #777;
     --green1: #265C42;
     --green2: #193C3E;
+    --release: #181818;
 }
 
 body {
@@ -172,17 +173,18 @@ p {
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
+    background-color: var(--release);
 
     min-width: var(--mobileWrap);
-    width: 50%;
+    max-width: 1000px;
+    width: 100%;
     height: auto;
     margin: 5px;
+    display: flex;
+    align-items: center;
 }
 
 .blur {
-    background-color: #181818;
-    /*backdrop-filter: blur(8px);*/
-
     width: 100%;
     height: 100%;
     display: flex;
@@ -191,7 +193,7 @@ p {
     justify-content: flex-start;
 }
 
-.blur:hover {
+.singleRelease:hover {
     background-color: var(--highlight);
 }
 
@@ -281,12 +283,44 @@ i {
     justify-content: center;
 }
 
-.filter button {
+.filter button, .saveSongButton {
     margin: 5px;
-    border-radius: 25px;
+    border-radius: 5px;
     padding: 7px 14px;
     outline: none;
     font-weight: 700;
+}
+
+.saveSongButton {
+    height: 30px;
+    width: 32px;
+    font-size: 15px;
+    text-align: center;
+    z-index: 1;
+    background: var(--release);  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 10px 10px 10px 0;
+}
+
+.saveSongButtonPre {
+    color: white;
+    border: 1px solid var(--lowlight);
+}
+
+.saveSongButtonAfter {
+    color: var(--green);
+    border: 1px solid var(--green1);
+}
+
+.saveSongButton i {
+    text-align: center;
+    width: 100%;
+    height: auto;
+    padding: 0;
+    margin: 5px;
 }
 
 .inactiveBtn {
@@ -301,7 +335,7 @@ i {
     border: 1px solid var(--green);
 }
 
-.inactiveBtn:hover, .activeBtn:hover {
+.inactiveBtn:hover, .activeBtn:hover, .saveSongButtonPre:hover {
     background: var(--green);
     color: black;
     border: 1px solid var(--green);
@@ -356,7 +390,7 @@ hr {
 
 #artistFG, #settingsFG {
     padding: 10px;
-    background-color: #181818;
+    background-color: var(--release);
     display: block;
     max-height: 80%;
     overflow-y: auto;
@@ -403,7 +437,7 @@ hr {
     border: 1px solid var(--red) !important;
 }
 
-.manageDiv button, .artistDiv button, .manageDiv input, #artistClose, #settingsClose {
+.manageDiv button, .manageDiv select, .artistDiv button, .manageDiv input, #artistClose, #settingsClose {
     font-family: 'Chakra Petch', sans-serif;
     font-size: 14px;
     background-color: transparent;
@@ -417,12 +451,17 @@ hr {
     height: 30px;
 }
 
-
-
 .manageDiv {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.manageDiv select {
+    width: 150px;
+}
+.manageDiv option {
+    background-color: var(--highlight);
 }
 
 #artistAddInput {
@@ -462,7 +501,7 @@ hr {
     width: calc(100vw - 50px);
     padding: 10px;
     border-radius: 10px;
-    background-color: #E43B44cc;
+    background-color: var(--red);
     backdrop-filter: blur(5px);
     display: none;
     /*display: flex;*/
@@ -533,7 +572,7 @@ hr {
     }
 
     #artistPopup, #albumPopup, #settingsPopup {
-        background-color: #181818;
+        background-color: var(--release);
     }
 
     #artistFG, #settingsFG {
@@ -589,6 +628,7 @@ hr {
     .lowerContent {
         justify-content: flex-start;
         padding-bottom: 10px;
+        flex-grow: 2;
     }
 
     #preview {

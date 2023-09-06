@@ -9,7 +9,8 @@ import User from "./user.js";
 import logger from "./logger.js";
 import targetProxy from "./main.js";
 
-const api = new SpotifyAPI(keys.id, keys.secret, keys.uri, window.showError);
+const location_ = window.location.href.split("?")[0];
+const api = new SpotifyAPI(keys.id, keys.secret, location_, window.showError);
 let user = null;
 let artists = [];
 
@@ -37,6 +38,10 @@ function getTimespan() {
     return user.timespan;
 }
 
+function getActivePlaylist() {
+    return user.active_playlist;
+}
+
 /* Login, request user Info */
 function login(onLogin) {
     api.call("GET", "user_profile", null, onLogin,
@@ -47,16 +52,25 @@ function login(onLogin) {
 function onLogin(response) {
     const data = JSON.parse(response);
     user = new User(data);
-    const time = localStorage.getItem("timeSpan");
-    const market = localStorage.getItem("region");
-    if (time !== null) {
-        user.timespan = time;
-    }
-    if (market !== null) {
-        user.market = market;
-    }
-    targetProxy.settings = { timespan : user.timespan, market : user.market };
+
+    api.call("GET", "playlists", null, playlistCallback, null, null)
+
     return user.getProfile();
+}
+
+function playlistCallback(response) {
+    let list = []
+    const data = JSON.parse(response).items;
+    for (let x in data) {
+        list.push({name : data[x].name, id : data[x].id});
+    }
+    user.playlists = list;
+    targetProxy.settings = {
+        timespan : user.timespan,
+        market : user.market,
+        active_playlist : user.active_playlist,
+        playlists : user.playlists
+    };
 }
 
 function logout() {
@@ -69,17 +83,18 @@ function logout() {
     SETTINGS SECTION
 */
 
-function saveSettings(time, market) {
+function saveSettings(time, market, active_playlist) {
+    if (active_playlist != null) {
+        user.active_playlist = active_playlist;
+    }
     if (time !== null) {
         if (isNaN(time) || time < 0 || time > 90) {
             logger.error("Could not save settings", "Input is not a number")
-        } else {
-            localStorage.setItem("timeSpan", time);        
+        } else {                    
             user.timespan = time;
         }
     }
-    if (market !== null) {
-        localStorage.setItem("marketplace", market);
+    if (market !== null) {        
         user.market = market;
     }
     location.reload()
@@ -91,14 +106,14 @@ function saveSettings(time, market) {
 
 /* Called from the frontend after login complete */
 function loadArtists() {
-    const artists_ = localStorage.getItem("artists"+user.id)
+    const artists_ = user.artists;
     if (artists_ !== null) {
         try {
             artists = JSON.parse(artists_);
         } catch (e) {
             logger.error("Could not load artists", e)
         }
-        console.log("Loaded artists from local storage")
+        console.log("Loaded artists")
         if (artists.length === 0) {
             targetProxy.albums = [];
             return;
@@ -212,9 +227,10 @@ function insertArtist(current) {
 
 // Save to localstorage, call proxy
 function saveArtists() { 
-    localStorage.setItem("artists"+user.id, JSON.stringify(artists));
+    user.artists = JSON.stringify(artists);
+    console.log(artists)
     targetProxy.artists = artists;
-    //refreshAlbums();
+    refreshAlbums();
 }
 
 // Hide artist, called from frontend
@@ -226,12 +242,13 @@ function hideArtist(nr) {
 
 // Import artists, called from frontend
 function importArtists(value) {
-    localStorage.setItem("artists"+user.id, value);
+    user.artists = value;
     location.reload();
 }
 
 // Reset artists, called from frontend
 function resetArtists() {
+    user.artists = [];
     localStorage.removeItem("artists"+user.id);
     location.reload();
 }
@@ -400,6 +417,25 @@ function filterAlbums(filters) {
     targetProxy.albums = results;
 }
 
+function saveSong(song) {
+    const list = user.active_playlist;
+    logger.log("Coming soon...", "This feature is coming in near future!");
+    return;
+    if (list === "none") {
+        logger.log("Could not save song", "You have selected 'None' as your playlist, therefore the song could not be saved. Please select a playlist in the settings");
+    } else if (list === "your_library") {
+        api.call("PUT", "save_to_library", "?ids="+song, saveToLibraryCallback, logger.error, "Could not save song");
+    }
+}
+
+function saveToLibraryCallback(response) {
+    console.log(response)
+}
+
+/*
+    SAVE SONG SECTION
+*/
+
 export default {getActiveArtists,
     getTimespan,
     filterAlbums,
@@ -419,5 +455,7 @@ export default {getActiveArtists,
     handleRedirect,
     login,
     logout,
-    getAccessToken
+    getAccessToken,
+    saveSong,
+    getActivePlaylist
 }

@@ -44,8 +44,9 @@ const html = {
 /* Main function, called on page load */
 window.onPageLoad = function() {
     const location = window.location.href.split("?")[0];
-    if (location !== keys.uri) {
-        console.error("wrong uri", location, keys.uri);
+    const locations = [keys.uri, keys.uri.slice(0, -1), keys.uri + "/index.html"]
+    if (!(locations.includes(location))) {
+        console.error("wrong uri", locations, location);
         return;
     }
 
@@ -141,16 +142,24 @@ function updateSettingsDiv() {
     }
     const input = document.getElementById("daysInput");
     const region = document.getElementById("marketplaceInput");
+    const playlist_select = document.getElementById("playlistSelect");
     input.value = target_.settings.timespan;
     region.value = target_.settings.market;
+    const playlists = target_.settings.playlists;
+    for (let i in playlists){
+        let option = document.createElement("option");
+        option.value = playlists[i].id;
+        option.innerHTML = playlists[i].name;
+        playlist_select.appendChild(option);
+    }
+    playlist_select.value = target_.settings.active_playlist;
 }
 
 window.saveSettings = function() {
-    const input = document.getElementById("daysInput");
-    const regioninput = document.getElementById("marketplaceInput");
-    const time = input.value;
-    const region = regioninput.value;
-    backend.saveSettings(time, region);
+    const time = document.getElementById("daysInput").value;
+    const region = document.getElementById("marketplaceInput").value;
+    const active_playlist = document.getElementById("playlistSelect").value;
+    backend.saveSettings(time, region, active_playlist);
 }
 
 /*
@@ -292,15 +301,13 @@ function updateAlbumsDiv() {
         }
         artist_string = artist_string.substring(0, artist_string.length - 8);
         if (result.isfeature) {
-            htmlstring += `<a style="background-image: url(' ${result.image}')"
-            href='${result.href}' target="_blank" class="singleRelease isFeature
+            htmlstring += `<div class="singleRelease isFeature
             ${result.type.toLowerCase()}">`
         } else {
-            htmlstring += `<a style="background-image: url(' ${result.image}')"
-            href='${result.href}' target="_blank" class="singleRelease
+            htmlstring += `<div class="singleRelease
             ${result.type.toLowerCase()}">`
         }
-        htmlstring += `<div class="blur"><img alt="Img" src="${result.image}">
+        htmlstring += `<a class="blur" href='${result.href}' target="_blank" ><img alt="Img" src="${result.image}">
             <div class="rightContent">                    
                 <p class="releaseName">${result.title}</p>
                 <p class="releaseArtist">${artist_string}</p>                
@@ -314,7 +321,9 @@ function updateAlbumsDiv() {
         } else {
             htmlstring += `<p class="releaseDate"><i class="fas fa-calendar"></i> ${dateToDEFormat(result.release_date,result.real_date)}</p>`;
         }
-        htmlstring += `</div></div></a>`;
+        htmlstring += `</div></a>`;
+        htmlstring += `<button onclick="saveSong('${result.href.split("/")[4]}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${result.href.split("/")[4]}"><i class="fa-regular fa-heart"></i></button>`
+        htmlstring += `</div>`
     }
     if (htmlstring === "") {
         html.releases.item.innerHTML = html.releases.inner;
@@ -401,6 +410,17 @@ window.toggleSingleFilter = function() {
     }
     updateFilterOverlay();
     backend.filterAlbums(filters);
+}
+
+window.saveSong = function(song) {
+    if (backend.getActivePlaylist() !== 'none') {
+        const elem = document.getElementById(`saveSongButton_${song}`);
+        elem.classList.remove("saveSongButtonPre");
+        elem.classList.add("saveSongButtonAfter");
+        elem.innerHTML = '<i class="fa-solid fa-heart"></i>';
+        elem.disabled = true;
+    }
+    backend.saveSong(song);
 }
 
 export default targetProxy;

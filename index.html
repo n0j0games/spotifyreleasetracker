@@ -40,13 +40,14 @@
         <img id="preview" src="images/preview2.png" alt="">
         <p id="footer">We are not related to Spotify AB or any of it´s partners in any way. &nbsp;&#8226;&nbsp;
             Made by <a href="https://noahschuette.github.io">Noah</a> <br>
-            This page only caches basic user information to keep you logged in and requests a list of the artists you're following
+            This page caches your Spotify user information to keep you logged in and requests a list of the artists you're following.
+            The page can also access your playlists to save new releases to them.
         </p>
     </section>
     <!-- App Section -->
     <section id="app">
         <p id="title">Latest Releases</p>
-        <p id="search_query_info">Showing releases for X artists in the last Y days</p>
+        <p id="search_query_info">Searching for artists and albums...</p>
         <div id="filter" class="filter">
             <button id="albumsbtn" class="inactiveBtn" onclick="toggleAlbumFilter()">Albums</button>
             <button id="singlebtn" class="inactiveBtn" onclick="toggleSingleFilter(false)">Singles</button>
@@ -88,10 +89,17 @@
             <li class="manageDiv">
                 <p>Marketplace</p>
                 <input id="marketplaceInput" type="text" maxlength="2" placeholder="DE">
-            </li>
+            </li>            
+            <li class="manageDiv">
+                <p>Add songs to</p>
+                <select id="playlistSelect" name="playlists" id="playlists">
+                    <option value="none">None</option>
+                    <option value="your_library">Your Library</option>
+                </select>
+            </li>            
             <li class="manageDiv">
                 <button onclick="saveSettings()" id="saveSettings">Save settings</button>
-            </li>
+            </li> 
             <hr>
             <p class="settingsInfoText">In case if you want to clear your browser cache or if want to sync your artists across devices you can export your artists to clipboard and import them here by pasting the text into the textbox. Or reset it alternatively</p>
             <li class="manageDiv">

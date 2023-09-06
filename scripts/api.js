@@ -12,6 +12,9 @@ const urls = {
     user_profile: 'https://api.spotify.com/v1/me',
     album_tracks: 'https://api.spotify.com/v1/albums/',
     artist: 'https://api.spotify.com/v1/artists/',
+    playlists : 'https://api.spotify.com/v1/me/playlists?limit=50',
+    save_to_library: 'https://api.spotify.com/v1/me/tracks',
+
 }
 
 /* Serves as the base for the Spotify API */
@@ -118,6 +121,7 @@ class SpotifyAPI {
       url += "&response_type=code";
       url += "&redirect_uri=" + encodeURI(this.redirect_uri);
       url += "&show_dialog=true";
+      //url += "&scope=user-follow-read user-read-private playlist-read-private playlist-modify-public playlist-modify-private user-library-modify";
       url += "&scope=user-follow-read user-read-private";
       callback(url);
     }

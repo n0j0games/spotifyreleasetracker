@@ -11,7 +11,7 @@ function log(title, subtitle) {
 
 /* Show error */
 function error(title, subtitle) {
-    message(`Something went wrong: Error ${title} (Try reload page)`, subtitle, "#E43B44")
+    message(`Something went wrong: Error ${title}`, subtitle, "#E43B44")
 }
 
 window.close_popup = function () {
