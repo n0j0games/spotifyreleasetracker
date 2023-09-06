@@ -457,6 +457,10 @@ hr {
     justify-content: center;
 }
 
+#whatsNew {
+    color: var(--green);
+}
+
 .manageDiv select {
     width: 150px;
 }

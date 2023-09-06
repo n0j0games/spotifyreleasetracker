@@ -44,7 +44,7 @@ const html = {
 /* Main function, called on page load */
 window.onPageLoad = function() {
     const location = window.location.href.split("?")[0];
-    const locations = [keys.uri, keys.uri.slice(0, -1), keys.uri + "/index.html"]
+    const locations = [keys.uri, keys.uri + "/", keys.uri + "/index.html"]
     if (!(locations.includes(location))) {
         console.error("wrong uri", locations, location);
         return;
