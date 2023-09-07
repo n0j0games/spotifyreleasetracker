@@ -95,8 +95,17 @@ p {
     margin: 0;
 }
 
-#preview {
-    height: 600px;
+#previewDiv {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+#previewDiv img {
+    height: 500px;
+    margin: 20px;
+    border-radius: 15px;
 }
 
 #welcomeTitle {
@@ -354,7 +363,7 @@ i {
 }
 
 #footer {
-    position: fixed;
+    position: relative;
     bottom: 0;
     color: var(--footer);
     font-size: 14px;
@@ -639,16 +648,20 @@ hr {
         flex-grow: 2;
     }
 
-    #preview {
-        display: none;
-    }
-
     #description {
         text-align: center;
     }
 
     #footer {
+        position: relative;
         margin: 0;
+    }
+    
+    #previewDiv img {
+        max-width: 320px;
+        width: calc(100vw - 40px);
+        height: auto;
+        margin: 10px 0;
     }
 }
 
