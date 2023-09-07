@@ -457,8 +457,12 @@ hr {
     justify-content: center;
 }
 
-#whatsNew {
+#whatsNew, #greenLink {
     color: var(--green);
+}
+
+#greenLink:hover {
+    color: white;
 }
 
 .manageDiv select {

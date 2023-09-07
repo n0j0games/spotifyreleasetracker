@@ -72,8 +72,6 @@ function onLogin(response) {
     html.user_info.logout_button.style.display = 'block';
     html.user_info.settings_button.style.display = 'block';
     console.log(`Logged in as ${user.displayname}`);
-
-    backend.loadArtists();
 }
 
 /* From "Connect with Spotify Button", request Authoriazation */
@@ -97,10 +95,13 @@ let divs = {
 }
 
 /* Proxy, handles backend changes automatically */
+const proxy_debug = localStorage.getItem("proxy_debug");
 let target_ = {};
 const targetProxy = new Proxy(target_, {
     set: function(target, key, value) {
-        console.log(`${key} updated`);
+        if (proxy_debug === 'true'){
+            console.log(`${key} updated`);
+        }
         target[key] = value;
         if (key == "artists" && divs.artists) {
             updateArtistsDiv()
@@ -108,6 +109,8 @@ const targetProxy = new Proxy(target_, {
             updateSettingsDiv()
         } else if (key == "albums" && !divs.settings && !divs.artists) {
             updateAlbumsDiv()
+        } else if (key == "filters" && !divs.settings && !divs.artists) {
+            updateFilterOverlay();
         }
         return true;
     }
@@ -222,27 +225,30 @@ window.addArtist = function() {
 
 /* Functions to manage artists, calling backend */
 
-window.exportArtists = function() {
-    backend.exportArtists();
+window.exportData = function() {
+    backend.exportData();
 }
 
 /* Import artists from clipboard */
-window.importArtists = function() {
+window.importData = function() {
     const input = document.getElementById("importArtistsInput");
-    let confirmAction = confirm("Are you sure you want override your artists?");
+    let confirmAction = confirm("Are you sure you want override your data?");
     if (confirmAction) {
-        backend.importArtists(input.value);
+        backend.importData(input.value);
     }
 }
 
-window.resetArtists = function() {
-    let confirmAction = confirm("Are you sure you want to reset your artists? This will remove any artist except your followed artists on spotify");
+window.deleteData = function() {
+    let confirmAction = confirm("Are you sure you want to delete your data? This will remove any stored data including your artists and log you out");
     if (confirmAction) {
-        backend.resetArtists();
+        backend.deleteData();
     }
 }
 
 window.syncArtists = function() {
+    const item = document.getElementById("artistSync");
+    item.innerHTML = "Syncing artists..."
+    item.disabled = true;
     backend.syncArtists();
 }
 
@@ -258,12 +264,6 @@ window.removeArtist = function (nr) {
     ALBUM DIV
 */
 
-let filters = {
-    album : false,
-    single : false,
-    feature : false
-}
-
 function updateAlbumsDiv() {
     if (target_.albums === undefined) {
         console.error("Updated albums div, even though albums are null");
@@ -278,10 +278,6 @@ function updateAlbumsDiv() {
         html.releases.item.children[0].style.display = "block";
         return;
     }
-
-    //resetFilterOverlay();
-
-    console.log(target_.albums)
 
     const results = target_.albums;
     let htmlstring = "";
@@ -322,7 +318,12 @@ function updateAlbumsDiv() {
             htmlstring += `<p class="releaseDate"><i class="fas fa-calendar"></i> ${dateToDEFormat(result.release_date,result.real_date)}</p>`;
         }
         htmlstring += `</div></a>`;
-        htmlstring += `<button onclick="saveSong('${result.href.split("/")[4]}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${result.href.split("/")[4]}"><i class="fa-regular fa-heart"></i></button>`
+        const song_id = result.href.split("/")[4];
+        if (!(backend.songIsSaved(song_id))) {
+            htmlstring += `<button onclick="saveSong('${song_id}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${song_id}"><i class="fa-regular fa-heart"></i></button>`
+        } else {
+            htmlstring += `<button disabled onclick="saveSong('${song_id}')" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${song_id}"><i class="fa-solid fa-heart"></i></button>`
+        }
         htmlstring += `</div>`
     }
     if (htmlstring === "") {
@@ -360,6 +361,7 @@ function resetFilterOverlay() {
 
 /* Update UI of all filters */
 function updateFilterOverlay() {
+    const filters = target_.filters;
     if (!filters.album) {
         html.filters.album.classList.add("inactiveBtn");
         html.filters.album.classList.remove("activeBtn");
@@ -385,31 +387,15 @@ function updateFilterOverlay() {
 
 /* Toggles filters */
 window.toggleFeatures = function() {
-    filters.feature = !filters.feature;
-    updateFilterOverlay();
-    backend.filterAlbums(filters);
+    backend.toggleFilters(false, false, true)
 }
 
 window.toggleAlbumFilter = function() {
-    if (filters.album) {
-        filters.album = false;
-    } else {
-        filters.album = true;
-        filters.single = false;
-    }
-    updateFilterOverlay();
-    backend.filterAlbums(filters);
+    backend.toggleFilters(true, false, false)
 }
 
 window.toggleSingleFilter = function() {
-    if (filters.single) {
-        filters.single = false;
-    } else {
-        filters.single = true;
-        filters.album = false;
-    }
-    updateFilterOverlay();
-    backend.filterAlbums(filters);
+    backend.toggleFilters(false, true, false)
 }
 
 window.saveSong = function(song) {

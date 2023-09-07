@@ -13,6 +13,12 @@ const location_ = window.location.href.split("?")[0];
 const api = new SpotifyAPI(keys.id, keys.secret, location_, window.showError);
 let user = null;
 let artists = [];
+let current_playlist = null;
+let filters = {
+    album : false,
+    single : false,
+    feature : false
+}
 
 /*
     AUTH/LOGIN/LOGOUT
@@ -42,22 +48,29 @@ function getActivePlaylist() {
     return user.active_playlist;
 }
 
-/* Login, request user Info */
-function login(onLogin) {
-    api.call("GET", "user_profile", null, onLogin,
-        logger.error, "Could not load user profile")
+function logout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    location.reload();
 }
 
-/* Called after successful login procedure */
+/* Login Step 1: Request user Info */
+function login(onLogin) {
+    api.call("GET", "user_profile", null, onLogin,
+        logger.error, "Could not load user profile") //Calls Step 2
+}
+
+/* Login Step 2: Called after successful login procedure */
 function onLogin(response) {
     const data = JSON.parse(response);
     user = new User(data);
 
-    api.call("GET", "playlists", null, playlistCallback, null, null)
+    api.call("GET", "playlists", null, playlistCallback, null, null) //Calls Step 3
 
     return user.getProfile();
 }
 
+/* Login Step 3 */
 function playlistCallback(response) {
     let list = []
     const data = JSON.parse(response).items;
@@ -65,6 +78,8 @@ function playlistCallback(response) {
         list.push({name : data[x].name, id : data[x].id});
     }
     user.playlists = list;
+    setCurrentPlaylist();
+    loadArtists(); //Calls Step 4
     targetProxy.settings = {
         timespan : user.timespan,
         market : user.market,
@@ -73,46 +88,14 @@ function playlistCallback(response) {
     };
 }
 
-function logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    location.reload();
-}
-
-/*
-    SETTINGS SECTION
-*/
-
-function saveSettings(time, market, active_playlist) {
-    if (active_playlist != null) {
-        user.active_playlist = active_playlist;
-    }
-    if (time !== null) {
-        if (isNaN(time) || time < 0 || time > 90) {
-            logger.error("Could not save settings", "Input is not a number")
-        } else {                    
-            user.timespan = time;
-        }
-    }
-    if (market !== null) {        
-        user.market = market;
-    }
-    location.reload()
-}
-
 /*
     ARTIST SECTION
 */
 
-/* Called from the frontend after login complete */
+/* Login Step 4: Loading Artists, after Playlist is set*/
 function loadArtists() {
-    const artists_ = user.artists;
-    if (artists_ !== null) {
-        try {
-            artists = JSON.parse(artists_);
-        } catch (e) {
-            logger.error("Could not load artists", e)
-        }
+    artists = user.artists;
+    if (artists !== null) {
         console.log("Loaded artists")
         if (artists.length === 0) {
             targetProxy.albums = [];
@@ -227,8 +210,7 @@ function insertArtist(current) {
 
 // Save to localstorage, call proxy
 function saveArtists() { 
-    user.artists = JSON.stringify(artists);
-    console.log(artists)
+    user.artists = artists;
     targetProxy.artists = artists;
     refreshAlbums();
 }
@@ -240,19 +222,6 @@ function hideArtist(nr) {
 
 }
 
-// Import artists, called from frontend
-function importArtists(value) {
-    user.artists = value;
-    location.reload();
-}
-
-// Reset artists, called from frontend
-function resetArtists() {
-    user.artists = [];
-    localStorage.removeItem("artists"+user.id);
-    location.reload();
-}
-
 // Remove artist, called from frontend
 function removeArtist(nr) {
     for (let k in artists) {
@@ -260,16 +229,6 @@ function removeArtist(nr) {
         artists.splice(nr, 1);
     }
     saveArtists();
-}
-
-async function exportArtists() {
-    try {
-        await navigator.clipboard.writeText(JSON.stringify((artists)));
-        console.log('Content copied to clipboard');
-        logger.log('Copied to clipbard', "")
-    } catch (err) {
-        logger.error('Failed to copy', err)
-    }
 }
 
 // Sync artists with spotify, called from frontend
@@ -380,7 +339,7 @@ function albumCallback(response) {
     total_--;
     if (total_ === 0) {
         results = sortResults(results);
-        targetProxy.albums = results;
+        filterAlbums();
     }
 }
 
@@ -401,8 +360,33 @@ function inTimeSpan(date) {
     return (diff <= user.timespan)
 }
 
-function filterAlbums(filters) {
-    console.log("filters",filters)
+function toggleFilters(album, single, feature) {
+
+    if (feature) {
+        filters.feature = !filters.feature;
+    } 
+    if (album) {
+        if (filters.album) {
+            filters.album = false;
+        } else {
+            filters.album = true;
+            filters.single = false;
+        }
+    } 
+    if (single) {
+        if (filters.single) {
+            filters.single = false;
+        } else {
+            filters.single = true;
+            filters.album = false;
+        }
+    }
+
+    targetProxy.filters = filters;
+    filterAlbums();
+}
+
+function filterAlbums() {
     for (let x in results) {
         if (filters.feature && results[x].album.isfeature) {
             results[x].album.show = false;
@@ -417,9 +401,99 @@ function filterAlbums(filters) {
     targetProxy.albums = results;
 }
 
+/*
+    SETTINGS SECTION
+*/
+
+/* Change which current playlist is selected, called at start and if changed in settings */
+function setCurrentPlaylist(){
+    const saved_playlists = user.saved_playlists;
+    if (user.saved_playlists === undefined) {
+        user.saved_playlists = [];
+    }
+    for (let i in saved_playlists) {
+        if (saved_playlists[i].name === user.active_playlist) {
+            current_playlist = saved_playlists[i];
+            break;
+        }
+    }
+    if (current_playlist === null && user.active_playlist !== "none") {
+        current_playlist = {"name" : user.active_playlist, "items" : []};
+        let temp_ = user.saved_playlists;
+        temp_.push(current_playlist);
+        user.saved_playlists = temp_;
+    }
+}
+
+/* called if settings change */
+function saveSettings(time, market, active_playlist) {
+    if (active_playlist != null) {
+        user.active_playlist = active_playlist;
+        setCurrentPlaylist();
+    }
+    if (time !== null) {
+        if (isNaN(time) || time < 0 || time > 90) {
+            logger.error("Could not save settings", "Input is not a number")
+        } else {                    
+            user.timespan = time;
+        }
+    }
+    if (market !== null) {        
+        user.market = market;
+    }
+    location.reload()
+}
+
+// Import data, called from frontend
+function importData(value) {
+    try {
+        const data = JSON.parse(value);
+        user.importUser(data);
+        location.reload();
+    } catch (e) {
+        logger.error("Could not load user", "The entered data is not in JSON format")
+    }
+}
+
+// Export data, called from frontend
+async function exportData() {
+    try {
+        await navigator.clipboard.writeText(JSON.stringify((user.exportUser())));
+        console.log('Content copied to clipboard');
+        logger.log('Copied to clipbard', "You can now save the clipboard into a file and paste it back in the settings to restore your data later")
+    } catch (err) {
+        logger.error('Failed to copy data', err)
+    }
+}
+
+// Reset artists, called from frontend
+function deleteData() {
+    localStorage.removeItem("user_"+user.id);
+    logout();
+}
+
+/*
+    SAVE SONG SECTION
+*/
+
+function songIsSaved(song) {
+    return current_playlist.items.includes(song);
+}
+
 function saveSong(song) {
-    const list = user.active_playlist;
     logger.log("Coming soon...", "This feature is coming in near future!");
+    const items = current_playlist.items;
+    if (items.includes(song)) {
+        console.warn("Wanted to save song even though its already saved");
+        return;
+    }
+    current_playlist.items.push(song);
+    if (current_playlist.items.length > 100) {
+        console.warn("Only storing up to 100 Items in playlist, removing oldest");
+        current_playlist.items.shift();
+    }
+    user.replaceSavedPlaylist(current_playlist);
+    //TODO: Tatsächlich hier speichern, sobald das geht
     return;
     if (list === "none") {
         logger.log("Could not save song", "You have selected 'None' as your playlist, therefore the song could not be saved. Please select a playlist in the settings");
@@ -429,25 +503,21 @@ function saveSong(song) {
 }
 
 function saveToLibraryCallback(response) {
-    console.log(response)
+    
 }
-
-/*
-    SAVE SONG SECTION
-*/
 
 export default {getActiveArtists,
     getTimespan,
     filterAlbums,
     getMarket,
     refreshAlbums,
-    exportArtists,
+    exportData,
     saveSettings,
     removeArtist,
     hideArtist,
     syncArtists,
-    resetArtists,
-    importArtists,
+    deleteData,
+    importData,
     addArtist,
     loadArtists,
     auth,
@@ -457,5 +527,7 @@ export default {getActiveArtists,
     logout,
     getAccessToken,
     saveSong,
-    getActivePlaylist
+    getActivePlaylist,
+    songIsSaved,
+    toggleFilters
 }

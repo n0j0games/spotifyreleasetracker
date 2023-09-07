@@ -101,15 +101,18 @@
                 <button onclick="saveSettings()" id="saveSettings">Save settings</button>
             </li> 
             <hr>
-            <p class="settingsInfoText">In case if you want to clear your browser cache or if want to sync your artists across devices you can export your artists to clipboard and import them here by pasting the text into the textbox. Or reset it alternatively</p>
             <li class="manageDiv">
-                <button onclick="resetArtists()" id="artistReset">Reset artists</button>
-                <button onclick="exportArtists()" id="artistExport">Export to clipboard</button>
+                Manage Your Data
+            </li>
+            <p class="settingsInfoText">You can delete, backup or import your data here. For import simply paste the data as text in the input field below.</p>
+            <li class="manageDiv">
+                <button onclick="deleteData()" id="artistReset">Delete data</button>
+                <button onclick="exportData()" id="artistExport">Export to clipboard</button>
 
             </li>
             <li class="manageDiv">
                 <input id="importArtistsInput" type="text" placeholder="Paste here">
-                <button onclick="importArtists()" id="artistsImport">Import Artists</button>
+                <button onclick="importData()" id="artistsImport">Import Data</button>
             </li>
             <hr>
             
@@ -124,8 +127,8 @@
             </li>
             <hr>
             <li class="manageDiv">
-                <p class="settingsInfoText">We are not related to Spotify AB or any of it´s partners in any way. <br>
-                Made by <a href="https://noahschuette.github.io">Noah</a></p>
+                <p class="settingsInfoText">We are not related to Spotify AB or any of it´s partners in any way.<br>
+                <a id="greenLink" href="https://noahschuette.github.io"> Made with <i class="fa-solid fa-heart"></i> by Noah</a></p>
             </li>
         </ul>
     </section>
