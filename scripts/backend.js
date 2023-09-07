@@ -101,6 +101,7 @@ function loadArtists() {
             targetProxy.albums = [];
             return;
         } else {
+            artists = sortArtists(artists);
             targetProxy.artists = artists;
             refreshAlbums();
         }
@@ -252,6 +253,11 @@ function getActiveArtists() {
         }
     }
     return c;
+}
+
+function sortArtists(temp) {
+    temp.sort((a,b) => a.name.localeCompare(b.name));
+    return temp;
 }
 
 /*
