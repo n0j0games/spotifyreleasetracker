@@ -149,6 +149,10 @@ function updateSettingsDiv() {
     input.value = target_.settings.timespan;
     region.value = target_.settings.market;
     const playlists = target_.settings.playlists;
+    playlist_select.innerHTML = `
+        <option value="none">None</option>
+        <option value="your_library">Your Library</option>
+    `;
     for (let i in playlists){
         let option = document.createElement("option");
         option.value = playlists[i].id;

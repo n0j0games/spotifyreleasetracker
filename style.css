@@ -457,7 +457,7 @@ hr {
     justify-content: center;
 }
 
-#whatsNew, #greenLink {
+#greenLink {
     color: var(--green);
 }
 
@@ -494,8 +494,16 @@ hr {
     border: 1px solid var(--green);
 }
 
+.settingsTitleText {
+    color: white;
+    background-color: var(--highlight);
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 3px;
+}
+
 .settingsInfoText {
-    max-width: 300px;
+    max-width: 350px;
     color: var(--lowlight);
     margin: 5px;
     text-align: center;
@@ -591,6 +599,7 @@ hr {
         min-width: 0;
         border: none;
         margin: 15px;
+        padding: 0 0 100px 0;
     }
 
     #artistClose, #settingsClose {

@@ -74,11 +74,12 @@
             </li>
         </ul>
     </section>
-    <!-- Settings -->
+    <!-- Settings --> 
     <section id="settingsPopup">
         <ul id="settingsFG">
             <li class="manageDiv">
                 <button onclick="enableSettingsDiv(false)" id="settingsClose"><i class="fa-solid fa-xmark"></i></button>
+                <p class="settingsTitleText"><i class="fa-solid fa-gear"></i> Settings</p>
             </li>
             <hr>
             <li class="manageDiv">
@@ -102,9 +103,11 @@
             </li> 
             <hr>
             <li class="manageDiv">
-                Manage Your Data
+                <p class="settingsTitleText"><i class="fa-solid fa-file-export"></i> Manage Your Data</p>      
             </li>
-            <p class="settingsInfoText">You can delete, backup or import your data here. For import simply paste the data as text in the input field below.</p>
+            <li class="manageDiv">
+                <p class="settingsInfoText">You can delete, backup or import your data here. For import simply paste the data as text in the input field below.</p>
+            </li>
             <li class="manageDiv">
                 <button onclick="deleteData()" id="artistReset">Delete data</button>
                 <button onclick="exportData()" id="artistExport">Export to clipboard</button>
@@ -115,20 +118,26 @@
                 <button onclick="importData()" id="artistsImport">Import Data</button>
             </li>
             <hr>
-            
             <li class="manageDiv">
-                <p id="whatsNew">What's new?</p>
+                <p class="settingsTitleText"><i class="fa-solid fa-newspaper"></i> What's New?</p>
             </li>
             <li class="manageDiv">
-                <p class="settingsInfoText"><a>Version 1.2.1:</a> Refactored code. Added buttons for future feature to save songs</p></p>
+                <p class="settingsInfoText"><a>Version 1.2.2:</a> Some style changes & Fixed bug on playlist settings</p></p>
             </li>
             <li class="manageDiv">
                 <p class="settingsInfoText"><a>Version 1.2.0:</a> The artist settings were moved to "Your Artists". Added new settings for country & the search time-span</p></p>
             </li>
             <hr>
             <li class="manageDiv">
+                <p class="settingsTitleText"><i class="fa-solid fa-bug"></i> Bug Report</p>
+            </li>
+            <li class="manageDiv">
+                <p class="settingsInfoText">If you found a bug please open a <a id="greenLink" target="_blank" href="https://github.com/n0j0games/spotifyreleasetracker/issues"> GitHub Issue</a></p>
+            </li>
+            <hr>
+            <li class="manageDiv">
                 <p class="settingsInfoText">We are not related to Spotify AB or any of it´s partners in any way.<br>
-                <a id="greenLink" href="https://noahschuette.github.io"> Made with <i class="fa-solid fa-heart"></i> by Noah</a></p>
+                <a id="greenLink" href="https://noahschuette.github.io" target="_blank"> Made with <i class="fa-solid fa-heart"></i> by Noah</a></p>
             </li>
         </ul>
     </section>
