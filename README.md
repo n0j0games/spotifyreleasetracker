@@ -1,8 +1,8 @@
-# [releasr: Release Tracker for Spotify](https://releasr.netlify.app)
+# releasr: Release Tracker for Spotify
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/n0j0games/spotifyreleasetracker?style=flat-square)
 
-[Click here to open my page](https://releasr.netlify.app)
+[Try it out here!](https://releasr.netlify.app)
 
 <div>
   <img src="https://github.com/n0j0games/spotifyreleasetracker/blob/main/images/examples/example1.png" width="250">
