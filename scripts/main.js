@@ -219,6 +219,12 @@ function updateArtistsDiv() {
     html.artists_popup.item.innerHTML = html.artists_popup.inner + html_;
 }
 
+window.addEventListener("keypress", function(event) {
+    if (event.key === "Enter" && divs.artists) {
+      window.addArtist();
+    }
+  });
+
 let searchq = null;
 window.addArtist = function() {
     const input = document.getElementById("artistAddInput");
