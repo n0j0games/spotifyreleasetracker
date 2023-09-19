@@ -628,18 +628,46 @@ hr {
         margin: 30px 0 0 0;
     }
 
+    .filter button {
+        height: 50px;
+    }
+
     .singleRelease {
         margin: 5px 0;
-        width: 100%;
+        width: 100vw;
         height: auto;
         background-color: transparent;
         background-image: none !important;
         min-width: 0;
+        position: relative;
+        display: flex;
     }
 
     .blur {
-        width: 100%;
+        flex-grow: 2;
+        width: auto;
+        margin: 0 70px 0 0;
         display: block;
+    }
+
+    .saveSongButton {
+        position:absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        margin: 0;
+        padding: 20px;
+        margin: 0 15px;
+        width: 70px;
+        font-size: 20px;
+        border: none;
+        border-radius: 0px;
+        background-color: var(--highlight);
+    }
+
+    .saveSongButtonAfter {
+        background-color: var(--green1);
+        color: white;
     }
 
     .rightcontent, .releaseArtist, .releaseName, .lowerContent {

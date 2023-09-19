@@ -14,7 +14,7 @@ const urls = {
     artist: 'https://api.spotify.com/v1/artists/',
     playlists : 'https://api.spotify.com/v1/me/playlists?limit=50',
     save_to_library: 'https://api.spotify.com/v1/me/tracks',
-
+    add_to_playlist: 'https://api.spotify.com/v1/playlists/',
 }
 
 /* Serves as the base for the Spotify API */
@@ -37,10 +37,9 @@ class SpotifyAPI {
     }
 
     /* Calls the API */
-    call(method, url, param, true_callback, error_callback, error_message) {      
+    call(method, url, param, true_callback, error_callback, error_message, body = null) {      
       let self = this;
       let xhr = new XMLHttpRequest();      
-      let body = null;
       let url_ = urls[url];
       if (url_ === undefined) {
         console.error("Wrong url", url, urls);

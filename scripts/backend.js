@@ -479,37 +479,68 @@ function deleteData() {
 }
 
 /*
-    SAVE SONG SECTION
+    SAVE ALBUM/SONGS SECTION
 */
 
 function songIsSaved(song) {
     return current_playlist.items.includes(song);
 }
 
-function saveSong(song) {
+let temp_album = null;
+function saveAlbum(album) {
+    temp_album = album;
+    targetProxy.saved = temp_album;
     logger.log("Coming soon...", "This feature is coming in near future!");
+    //TODO: Tatsächlich hier speichern, sobald das geht
+    return;
     const items = current_playlist.items;
-    if (items.includes(song)) {
-        console.warn("Wanted to save song even though its already saved");
+    if (items.includes(album)) {
+        console.warn("Wanted to save album even though its already saved");
         return;
     }
-    current_playlist.items.push(song);
+    current_playlist.items.push(album);
     if (current_playlist.items.length > 100) {
         console.warn("Only storing up to 100 Items in playlist, removing oldest");
         current_playlist.items.shift();
     }
     user.replaceSavedPlaylist(current_playlist);
-    //TODO: Tatsächlich hier speichern, sobald das geht
-    return;
     if (list === "none") {
         logger.log("Could not save song", "You have selected 'None' as your playlist, therefore the song could not be saved. Please select a playlist in the settings");
     } else if (list === "your_library") {
-        api.call("PUT", "save_to_library", "?ids="+song, saveToLibraryCallback, logger.error, "Could not save song");
+        api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=50`, getAlbumTracksCallback, logger.error, "Could not save songs");
+        
     }
 }
 
-function saveToLibraryCallback(response) {
-    
+function getAlbumTracksCallback(response) {
+    let songs = [];
+    const data = JSON.parse(response);
+    if (data.items.length === 0) {
+        console.error("Empty album");
+        return;
+    }
+    if (list === "your_library") {
+        for (let i in data.items) {
+            songs.append(data.items[i].id);
+        }
+        api.call("PUT", "save_to_library", "?ids="+songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
+    } else {
+        for (let i in data.items) {
+            songs.append("spotify:track:"+data.items[i].id);
+        }
+        const body = {"uris" : songs};
+        api.call("POST", "add_to_playlist", null, saveToLibraryCallBack, logger.error, "Could not save song", body)
+    }
+}
+
+function saveToLibraryCallBack(response) {
+    if (temp_album === null) {
+        console.error("Album is null in savetolibrarycallback");
+        return;
+    }
+    logger.log("Saved songs", "Successfully saved songs to your library/playlist");
+    targetProxy.saved = temp_album;
+    temp_album = null;   
 }
 
 export default {getActiveArtists,
@@ -532,7 +563,7 @@ export default {getActiveArtists,
     login,
     logout,
     getAccessToken,
-    saveSong,
+    saveAlbum,
     getActivePlaylist,
     songIsSaved,
     toggleFilters

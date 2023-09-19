@@ -107,10 +107,14 @@ const targetProxy = new Proxy(target_, {
             updateArtistsDiv()
         } else if (key == "settings" && divs.settings) {
             updateSettingsDiv()
-        } else if (key == "albums" && !divs.settings && !divs.artists) {
-            updateAlbumsDiv()
-        } else if (key == "filters" && !divs.settings && !divs.artists) {
-            updateFilterOverlay();
+        } else if (!divs.settings && !divs.artists) {
+            if (key == "albums") {
+                updateAlbumsDiv()
+            } else if (key == "filters") {
+                updateFilterOverlay();
+            } else if (key == "saved") {
+                updateLikedButton();
+            }
         }
         return true;
     }
@@ -330,9 +334,9 @@ function updateAlbumsDiv() {
         htmlstring += `</div></a>`;
         const song_id = result.href.split("/")[4];
         if (!(backend.songIsSaved(song_id))) {
-            htmlstring += `<button onclick="saveSong('${song_id}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${song_id}"><i class="fa-regular fa-heart"></i></button>`
+            htmlstring += `<button onclick="saveAlbum('${song_id}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${song_id}"><i class="fa-regular fa-heart"></i></button>`
         } else {
-            htmlstring += `<button disabled onclick="saveSong('${song_id}')" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${song_id}"><i class="fa-solid fa-heart"></i></button>`
+            htmlstring += `<button disabled onclick="saveAlbum('${song_id}')" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${song_id}"><i class="fa-solid fa-heart"></i></button>`
         }
         htmlstring += `</div>`
     }
@@ -408,15 +412,23 @@ window.toggleSingleFilter = function() {
     backend.toggleFilters(false, true, false)
 }
 
-window.saveSong = function(song) {
+window.saveAlbum = function(album) {
     if (backend.getActivePlaylist() !== 'none') {
-        const elem = document.getElementById(`saveSongButton_${song}`);
-        elem.classList.remove("saveSongButtonPre");
-        elem.classList.add("saveSongButtonAfter");
-        elem.innerHTML = '<i class="fa-solid fa-heart"></i>';
+        const elem = document.getElementById(`saveSongButton_${album}`);
         elem.disabled = true;
     }
-    backend.saveSong(song);
+    backend.saveAlbum(album);
+}
+
+function updateLikedButton() {
+    if (target_.saved === undefined) {
+        console.error("Updated liked button, even though saved is null");
+        return;
+    }
+    const elem = document.getElementById(`saveSongButton_${target_.saved}`);
+    elem.classList.remove("saveSongButtonPre");
+    elem.classList.add("saveSongButtonAfter");
+    elem.innerHTML = '<i class="fa-solid fa-heart"></i>';
 }
 
 export default targetProxy;
