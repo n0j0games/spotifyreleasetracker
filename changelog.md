@@ -1,7 +1,9 @@
 # TODO
 
-- Playlists added multiple times to dropdown after closing & repoening settings
-- Per selected playlist: Save list of albuns that already were liked & compare new releases with these albums, only save up to 100 releases or smth
+# Version 1.3.0
+
+- Songs from releases can now be saved to your library or playlists
+- Minor bugfixes
 
 # Version 1.2.2
 

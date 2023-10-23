@@ -51,12 +51,12 @@ class SpotifyAPI {
       xhr.open(method, url_, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.setRequestHeader('Authorization', 'Bearer ' + this.access_token);
-      xhr.send(body);
+      xhr.send(JSON.stringify(body));
       //xhr.onerror = console.warn("XHR:", xhr);
       xhr.onload = function() {
         if (self.show_api_calls === "true")
           console.log("Called", method, url_, this.status)
-        if (this.status == 200) {
+        if (this.status == 200 || this.status == 201) {
           true_callback(this.response);
         } else if (this.status == 401) {
           console.log(self)
@@ -129,8 +129,8 @@ class SpotifyAPI {
       url += "&response_type=code";
       url += "&redirect_uri=" + encodeURI(this.redirect_uri);
       url += "&show_dialog=true";
-      //url += "&scope=user-follow-read user-read-private playlist-read-private playlist-modify-public playlist-modify-private user-library-modify";
-      url += "&scope=user-follow-read user-read-private";
+      url += "&scope=user-follow-read user-read-private playlist-read-private playlist-modify-public playlist-modify-private user-library-modify";
+      //url += "&scope=user-follow-read user-read-private";
       callback(url);
     }
 

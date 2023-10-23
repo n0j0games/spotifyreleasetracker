@@ -43,6 +43,7 @@ const html = {
 
 /* Main function, called on page load */
 window.onPageLoad = function() {
+
     const location = window.location.href.split("?")[0];
     const locations = [keys.uri, keys.uri + "/", keys.uri + "/index.html"]
     if (!(locations.includes(location))) {
@@ -333,7 +334,7 @@ function updateAlbumsDiv() {
         }
         htmlstring += `</div></a>`;
         const song_id = result.href.split("/")[4];
-        if (!(backend.songIsSaved(song_id))) {
+        if (!(backend.albumIsSaved(song_id))) {
             htmlstring += `<button onclick="saveAlbum('${song_id}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${song_id}"><i class="fa-regular fa-heart"></i></button>`
         } else {
             htmlstring += `<button disabled onclick="saveAlbum('${song_id}')" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${song_id}"><i class="fa-solid fa-heart"></i></button>`

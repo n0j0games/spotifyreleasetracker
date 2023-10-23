@@ -54,8 +54,16 @@ function logout() {
     location.reload();
 }
 
+const requiredversion = 130;
 /* Login Step 1: Request user Info */
 function login(onLogin) {
+    const version = localStorage.getItem("releasr_auth_version");
+    if (version === null || version < requiredversion) {
+        localStorage.setItem("releasr_auth_version", requiredversion);
+        logout();
+        return;
+    }
+
     api.call("GET", "user_profile", null, onLogin,
         logger.error, "Could not load user profile") //Calls Step 2
 }
@@ -482,17 +490,21 @@ function deleteData() {
     SAVE ALBUM/SONGS SECTION
 */
 
-function songIsSaved(song) {
-    return current_playlist.items.includes(song);
+function albumIsSaved(album) {
+    console.log(current_playlist)
+    if (current_playlist === null || current_playlist.name === "none") {
+        return false;
+    }
+    return current_playlist.items.includes(album);
 }
 
 let temp_album = null;
 function saveAlbum(album) {
     temp_album = album;
-    targetProxy.saved = temp_album;
-    logger.log("Coming soon...", "This feature is coming in near future!");
-    //TODO: Tatsächlich hier speichern, sobald das geht
-    return;
+    if (current_playlist === null || current_playlist.name === "none") {
+        logger.log("Could not save song", "You have selected 'None' as your playlist, therefore the song could not be saved. Please select a playlist in the settings");
+        return;
+    }
     const items = current_playlist.items;
     if (items.includes(album)) {
         console.warn("Wanted to save album even though its already saved");
@@ -500,36 +512,32 @@ function saveAlbum(album) {
     }
     current_playlist.items.push(album);
     if (current_playlist.items.length > 100) {
-        console.warn("Only storing up to 100 Items in playlist, removing oldest");
+        console.warn("Only storing up to 100 Albums in playlist, removing oldest");
         current_playlist.items.shift();
     }
     user.replaceSavedPlaylist(current_playlist);
-    if (list === "none") {
-        logger.log("Could not save song", "You have selected 'None' as your playlist, therefore the song could not be saved. Please select a playlist in the settings");
-    } else if (list === "your_library") {
-        api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=50`, getAlbumTracksCallback, logger.error, "Could not save songs");
-        
-    }
+    api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=50`, saveSongsFromAlbum, logger.error, "Could not save songs");  
 }
 
-function getAlbumTracksCallback(response) {
+function saveSongsFromAlbum(response) {
     let songs = [];
     const data = JSON.parse(response);
     if (data.items.length === 0) {
         console.error("Empty album");
         return;
     }
-    if (list === "your_library") {
+    if (current_playlist.name === "your_library") {
         for (let i in data.items) {
-            songs.append(data.items[i].id);
+            songs.push(data.items[i].id);
         }
         api.call("PUT", "save_to_library", "?ids="+songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
     } else {
         for (let i in data.items) {
-            songs.append("spotify:track:"+data.items[i].id);
+            songs.push("spotify:track:"+data.items[i].id);
         }
         const body = {"uris" : songs};
-        api.call("POST", "add_to_playlist", null, saveToLibraryCallBack, logger.error, "Could not save song", body)
+        console.log(body)
+        api.call("POST", "add_to_playlist", current_playlist.name + "/tracks", saveToLibraryCallBack, logger.error, "Could not save song", body)
     }
 }
 
@@ -565,6 +573,6 @@ export default {getActiveArtists,
     getAccessToken,
     saveAlbum,
     getActivePlaylist,
-    songIsSaved,
+    albumIsSaved,
     toggleFilters
 }
