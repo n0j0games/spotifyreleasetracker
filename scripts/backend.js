@@ -24,7 +24,9 @@ let filters = {
     AUTH/LOGIN/LOGOUT
 */
 
+const requiredversion = 130;
 function auth() {
+    localStorage.setItem("releasr_auth_version", requiredversion);
     api.requestAuthorization( function(url) {window.location.href = url;} );
 }
 
@@ -54,7 +56,6 @@ function logout() {
     location.reload();
 }
 
-const requiredversion = 130;
 /* Login Step 1: Request user Info */
 function login(onLogin) {
     const version = localStorage.getItem("releasr_auth_version");
