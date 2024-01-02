@@ -34,7 +34,8 @@ const html = {
         feature : document.getElementById("featureBtn")
     },
     no_artists : document.getElementById("noartists"),
-    search_query_info : document.getElementById("search_query_info")
+    search_query_info : document.getElementById("search_query_info"),
+    spinner : document.getElementById("spinner")
 }
 
 /*
@@ -285,6 +286,7 @@ function updateAlbumsDiv() {
         return;
     }
 
+    html.spinner.style.display = "none";
     html.search_query_info.innerHTML = `Showing releases for ${backend.getActiveArtists()} artists in the last ${backend.getTimespan()} days`;
 
     // If no albums available: show empty list
@@ -333,12 +335,15 @@ function updateAlbumsDiv() {
             htmlstring += `<p class="releaseDate"><i class="fas fa-calendar"></i> ${dateToDEFormat(result.release_date,result.real_date)}</p>`;
         }
         htmlstring += `</div></a>`;
-        const song_id = result.href.split("/")[4];
-        if (!(backend.albumIsSaved(song_id))) {
-            htmlstring += `<button onclick="saveAlbum('${song_id}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${song_id}"><i class="fa-regular fa-heart"></i></button>`
+        const album_id = result.href.split("/")[4];
+        /*if (result.tracks !== 1) {
+            htmlstring += `<button disabled onclick="" class="saveSongButton saveSongButtonPre" id="moreInfoButton_${album_id}"><i class="fa-solid fa-chevron-down"></i></button>`        
+        }*/
+        if (!(backend.albumIsSaved(album_id))) {
+            htmlstring += `<button onclick="saveAlbum('${album_id}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${album_id}"><i class="fa-regular fa-heart"></i></button>`
         } else {
-            htmlstring += `<button disabled onclick="saveAlbum('${song_id}')" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${song_id}"><i class="fa-solid fa-heart"></i></button>`
-        }
+            htmlstring += `<button disabled onclick="saveAlbum('${album_id}')" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${album_id}"><i class="fa-solid fa-heart"></i></button>`
+        } 
         htmlstring += `</div>`
     }
     if (htmlstring === "") {

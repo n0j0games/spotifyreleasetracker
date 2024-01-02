@@ -84,6 +84,7 @@ function playlistCallback(response) {
     let list = []
     const data = JSON.parse(response).items;
     for (let x in data) {
+        if (data[x].owner.id === user.id)
         list.push({name : data[x].name, id : data[x].id});
     }
     user.playlists = list;
@@ -303,10 +304,12 @@ function refreshAlbums() {
 }
 
 function albumCallback(response) {
+    const searched_artist = JSON.parse(response).href.split("/")[5];
     const items = JSON.parse(response).items;
     for (let x in items) {
         const item = items[x];
         let album = {
+            id : item.external_urls.spotify.split("/")[4],
             title : item.name,            
             artist : item.artists[0].name,
             type : item.album_type,
@@ -317,8 +320,10 @@ function albumCallback(response) {
             release_date : item.release_date,
             tracks : item.total_tracks,
             markets : item.available_markets,
+            searched_artist : searched_artist,
             isfeature : true,
-            show : true
+            show : true,
+            songs : []
         }
         for (const y in item.artists) {
             album.artists_list.push(item.artists[y].name);
@@ -349,7 +354,7 @@ function albumCallback(response) {
         }
         if (intimespan  && !duplicate && !fromVariousArtists) {
             results.push({album});
-        }
+        } 
     }
     total_--;
     if (total_ === 0) {
@@ -492,7 +497,6 @@ function deleteData() {
 */
 
 function albumIsSaved(album) {
-    console.log(current_playlist)
     if (current_playlist === null || current_playlist.name === "none") {
         return false;
     }
@@ -501,6 +505,7 @@ function albumIsSaved(album) {
 
 let temp_album = null;
 function saveAlbum(album) {
+    console.log("Album",album)
     temp_album = album;
     if (current_playlist === null || current_playlist.name === "none") {
         logger.log("Could not save song", "You have selected 'None' as your playlist, therefore the song could not be saved. Please select a playlist in the settings");
@@ -534,6 +539,7 @@ function saveSongsFromAlbum(response) {
         api.call("PUT", "save_to_library", "?ids="+songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
     } else {
         for (let i in data.items) {
+            console.log(data.items[i]);
             songs.push("spotify:track:"+data.items[i].id);
         }
         const body = {"uris" : songs};

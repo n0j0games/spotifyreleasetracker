@@ -58,6 +58,9 @@
             <button id="featureBtn" class="inactiveBtn" onclick="toggleFeatures()">Hide Features</button>
             <button id="artistNewBtn" class="inactiveBtn" onclick="enableArtistsDiv(true)">Your Artists</button>
         </div>
+        <div id="spinner">
+            <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+        </div>
         <div id="releases">
             <p id="noartists">No releases found for your selected time span, artists and filters.<br>Try to add more artists in the "Your Artists" section</p>
             <p id="emptyfilter">No recent releases found for your artists. Try another filter.</p>
@@ -124,6 +127,9 @@
             <hr>
             <li class="manageDiv">
                 <p class="settingsTitleText"><i class="fa-solid fa-newspaper"></i> What's New?</p>
+            </li>
+            <li class="manageDiv">
+                <p class="settingsInfoText"><a>Version 1.3.1:</a> Minor bug fixes, added loading spinner</p>
             </li>
             <li class="manageDiv">
                 <p class="settingsInfoText"><a>Version 1.3.0:</a> Songs from releases can now be saved to your library or playlists</p>

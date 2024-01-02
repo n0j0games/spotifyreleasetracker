@@ -1,5 +1,10 @@
 # TODO
 
+# Version 1.3.1
+
+- Minor bugfixes
+- added loading spinner
+
 # Version 1.3.0
 
 - Songs from releases can now be saved to your library or playlists
