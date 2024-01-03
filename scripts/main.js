@@ -320,6 +320,9 @@ function updateAlbumsDiv() {
             htmlstring += `<div class="singleRelease
             ${result.type.toLowerCase()}">`
         }
+
+        htmlstring += `<div class="songUpper">`
+
         htmlstring += `<a class="blur" href='${result.href}' target="_blank" ><img alt="Img" src="${result.image}">
             <div class="rightContent">                    
                 <p class="releaseName">${result.title}</p>
@@ -336,15 +339,41 @@ function updateAlbumsDiv() {
         }
         htmlstring += `</div></a>`;
         const album_id = result.href.split("/")[4];
-        /*if (result.tracks !== 1) {
-            htmlstring += `<button disabled onclick="" class="saveSongButton saveSongButtonPre" id="moreInfoButton_${album_id}"><i class="fa-solid fa-chevron-down"></i></button>`        
-        }*/
+        if (result.tracks !== 1) {
+            htmlstring += `<button onclick="toggleSongs('${album_id}')" class="saveSongButton saveSongButtonPre" id="songListButton_${album_id}"><i class="fa-solid fa-chevron-down"></i></button>`
+        }
         if (!(backend.albumIsSaved(album_id))) {
             htmlstring += `<button onclick="saveAlbum('${album_id}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${album_id}"><i class="fa-regular fa-heart"></i></button>`
         } else {
             htmlstring += `<button disabled onclick="saveAlbum('${album_id}')" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${album_id}"><i class="fa-solid fa-heart"></i></button>`
         } 
-        htmlstring += `</div>`
+
+        htmlstring += `</div>` // end upper content
+
+        if (result.tracks !== 1) {
+            htmlstring += `<table cellspacing="0" class="songLower" id="songLower_${album_id}">`
+            for (const y in result.songs) {
+                if (y % 2 === 0) {
+                    htmlstring += `<tr class="song evenSong">`;
+                } else {
+                    htmlstring += `<tr class="song">`;
+                }
+                htmlstring += `<th class="songNumber">${parseInt(y) + 1}:</th>`;                
+                htmlstring += `<th class="songTitle">${result.songs[y].name}</th>`;
+                htmlstring += `<th>`
+                for (const z in result.songs[y].artists) {
+                    const artist = result.songs[y].artists[z];
+                    htmlstring += `${artist}`;
+                    if (z != result.songs[y].artists.length - 1) {
+                        htmlstring += ` &#8226; `;
+                    }
+                }
+                htmlstring += `</th></tr>` // end song
+            }
+            htmlstring += `</table>` // end lower content
+        }
+
+        htmlstring += `</div>` // end whole content
     }
     if (htmlstring === "") {
         html.releases.item.innerHTML = html.releases.inner;
@@ -424,6 +453,17 @@ window.saveAlbum = function(album) {
         elem.disabled = true;
     }
     backend.saveAlbum(album);
+}
+
+window.toggleSongs = function(album) {
+    const elem = document.getElementById(`songLower_${album}`);
+    if (elem.style.display !== "table") {
+        elem.style.display = "table";
+        document.getElementById(`songListButton_${album}`).innerHTML = '<i class="fa-solid fa-chevron-up"></i>';
+    } else {
+        elem.style.display = "none";
+        document.getElementById(`songListButton_${album}`).innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+    }
 }
 
 function updateLikedButton() {

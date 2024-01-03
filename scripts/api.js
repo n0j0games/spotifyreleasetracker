@@ -63,7 +63,7 @@ class SpotifyAPI {
           refreshToken(self);
         } else if (this.status == 429) {
           if (call_count > 10) {
-            error_callback(this.status, "Timed out. Try refreshing the page or again later!");
+            error_callback(this.status, "Timed out. Refresh the page or try again later!");
           } else {
             console.log("Too many requests, waiting 1s")
             setTimeout(function() {
@@ -71,7 +71,7 @@ class SpotifyAPI {
             }, 1000);
           }          
         } else {
-          error_callback(this.status, error_message);
+          error_callback(this.status, `${error_message}; Error may caused by Spotify API: ${this.responseText}` );
         }
       }
     }

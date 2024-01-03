@@ -4,6 +4,7 @@
 
 - Minor bugfixes
 - added loading spinner
+- added tracklist
 
 # Version 1.3.0
 

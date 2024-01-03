@@ -74,7 +74,7 @@ function onLogin(response) {
     const data = JSON.parse(response);
     user = new User(data);
 
-    api.call("GET", "playlists", null, playlistCallback, null, null) //Calls Step 3
+    api.call("GET", "playlists", null, playlistCallback, logger.error, "Could not load your profile") //Calls Step 3
 
     return user.getProfile();
 }
@@ -354,6 +354,7 @@ function albumCallback(response) {
         }
         if (intimespan  && !duplicate && !fromVariousArtists) {
             results.push({album});
+            api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, getSongsCallback, logger.error, "Could not save songs");  
         } 
     }
     total_--;
@@ -361,6 +362,28 @@ function albumCallback(response) {
         results = sortResults(results);
         filterAlbums();
     }
+}
+
+function getSongsCallback(response) {
+    const data = JSON.parse(response);
+    const album_id = data.href.split("/")[5];
+    const items = data.items;
+    let songs = [];
+    for (let x in items) {
+        let artists = [];
+        for (let y in items[x].artists) {
+            artists.push(items[x].artists[y].name);
+        }
+        songs.push({"name" : items[x].name, "artists" : artists, "id" : items[x].id});
+    }
+    for (let x in results) {
+        if (results[x].album.id === album_id) {
+            results[x].album.songs = songs;
+            break;
+        }
+    }
+    results = sortResults(results);
+    filterAlbums();
 }
 
 /* sort by date & main artist */
@@ -380,6 +403,7 @@ function inTimeSpan(date) {
     return (diff <= user.timespan)
 }
 
+/* toggles the specific filters, call via main */ 
 function toggleFilters(album, single, feature) {
 
     if (feature) {
@@ -406,6 +430,7 @@ function toggleFilters(album, single, feature) {
     filterAlbums();
 }
 
+/* filters each album and sends them back to main*/
 function filterAlbums() {
     for (let x in results) {
         if (filters.feature && results[x].album.isfeature) {
@@ -538,12 +563,10 @@ function saveSongsFromAlbum(response) {
         }
         api.call("PUT", "save_to_library", "?ids="+songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
     } else {
-        for (let i in data.items) {
-            console.log(data.items[i]);
+        for (let i in data.items) {            
             songs.push("spotify:track:"+data.items[i].id);
         }
         const body = {"uris" : songs};
-        console.log(body)
         api.call("POST", "add_to_playlist", current_playlist.name + "/tracks", saveToLibraryCallBack, logger.error, "Could not save song", body)
     }
 }
@@ -557,6 +580,7 @@ function saveToLibraryCallBack(response) {
     targetProxy.saved = temp_album;
     temp_album = null;   
 }
+
 
 export default {getActiveArtists,
     getTimespan,
