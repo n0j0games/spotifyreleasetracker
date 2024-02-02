@@ -45,7 +45,8 @@ const html = {
 /* Main function, called on page load */
 window.onPageLoad = function() {
 
-    const location = window.location.href.split("?")[0];
+    let location = window.location.href.split("?")[0];
+    location = location.replace("noahschuette.de", "netlify.app");
     const locations = [keys.uri, keys.uri + "/", keys.uri + "/index.html"]
     if (!(locations.includes(location))) {
         console.error("wrong uri", locations, location);
