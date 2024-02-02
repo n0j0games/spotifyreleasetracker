@@ -46,7 +46,10 @@ const html = {
 window.onPageLoad = function() {
 
     let location = window.location.href.split("?")[0];
-    location = location.replace("noahschuette.de", "netlify.app");
+    if (location.includes("netlify.app")) {
+        location = location.replace("netlify.app","noahschuette.de");
+        window.location.href = location;
+    }
     const locations = [keys.uri, keys.uri + "/", keys.uri + "/index.html"]
     if (!(locations.includes(location))) {
         console.error("wrong uri", locations, location);
