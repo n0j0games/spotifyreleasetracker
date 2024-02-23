@@ -15,11 +15,12 @@ const html = {
         popup : document.getElementById("artistPopup"),
         item : document.getElementById("artistFG"),
         inner : document.getElementById("artistFG").innerHTML,
-        input : document.getElementById("artistAddInput")
+        input : document.getElementById("artistAddInput"),
+        list : document.getElementById("artistList")
     },
     releases : {
         item : document.getElementById("releases"),
-        inner : document.getElementById("releases").innerHTML
+        inner : document.getElementById("releases").innerHTML,
     },
     user_info : {
         item : document.getElementById("loginInfo"),
@@ -125,6 +126,7 @@ const targetProxy = new Proxy(target_, {
         }
         target[key] = value;
         if (key == "artists" && divs.artists) {
+            document.getElementById("artistSync").innerHTML = `<i class="fa-solid fa-rotate"></i>Sync with Spotify`;
             updateArtistsDiv()
         } else if (key == "settings" && divs.settings) {
             updateSettingsDiv()
@@ -211,8 +213,9 @@ window.enableArtistsDiv = function (enable) {
         html.artists_popup.popup.style.display = "flex";
         document.body.style.overflow = "hidden";
         divs.artists = true;
-        updateArtistsDiv();
+        backend.searchArtist(""); // empty search that updates artist div afterwards
     } else {
+        document.getElementById("artistAddInput").value = "";
         document.body.style.overflow = "auto";
         html.artists_popup.popup.style.display = "none";
         divs.artists = false;
@@ -220,8 +223,14 @@ window.enableArtistsDiv = function (enable) {
     }
 }
 
+const input_ = document.getElementById("artistAddInput");
+input_.addEventListener("input", function() {
+    backend.searchArtist(input_.value);
+});
+
 /* Build artist div after artists change */
 function updateArtistsDiv() {
+    const query = document.getElementById("artistAddInput").value
     if (!divs.artists) {
         console.warn("Updated artists div, even though its inactive")
     }
@@ -233,36 +242,53 @@ function updateArtistsDiv() {
         html.artists_popup.item.innerHTML = html.artists_popup.inner;
     }
     let html_ = "";
+    let inSearchSection = false;
     for (let x in target_.artists) {
-        html_ += `<li id="artist-${x}" class="artistDiv">
-                    <img src="${target_.artists[x].image}" alt="">
-                        <p class="artistTitle">${target_.artists[x].name}</p>`
-        if (target_.artists[x].following) {
-            html_ += `<p class="artistSpotify"><i class="fa-solid fa-rotate"></i>Following</p>`
+        if (target_.artists[x].added !== false && query !== "" && target_.artists[x].name.toLowerCase().includes(query.toLowerCase()) === false) {
+            continue;
         }
-        if (!target_.artists[x].following) {
-            html_ += `<button onclick="removeArtist(${x})">Remove</button></li>`
-        } else if (target_.artists[x].active) {
-            html_ += `<button onclick="hideArtist(${x})">Hide</button></li>`
+        if (!inSearchSection && target_.artists[x].added === false) {
+            inSearchSection = true;
+            html_ += `<p id="searchSection"><i class="fa-brands fa-spotify"></i> Search Suggestions</p>`
+        }
+        html_ += `<li id="artist-${x}" class="artistDiv">`;
+        if (target_.artists[x].image !== null) {
+            html_ += `<img src="${target_.artists[x].image}" alt=""></img>`;
         } else {
-            html_ += `<button onclick="hideArtist(${x})">Show</button></li>`
+            html_ += `<img src="images/profilepic_gray.png" alt=""></img>`;
+        }
+        html_ += `<p class="artistTitle">${target_.artists[x].name}</p>`;
+        if (!target_.artists[x].added) {
+            html_ += `<button onclick="addArtist('${target_.artists[x].id}')"><i class="fa-solid fa-plus"></i></button></li>`
+        } else {
+            if (target_.artists[x].following) {
+                html_ += `<p class="artistSpotify"><i class="fa-solid fa-rotate"></i>Following</p>`
+            }
+            html_ += `<button class="artistRemove" onclick="removeArtist(${x})"><i class="fa-solid fa-minus"></i></button></li>`;
+
         }
     }
-    html.artists_popup.item.innerHTML = html.artists_popup.inner + html_;
+    if (html_.length === 0) {
+        html_ += `<p id="noartistssearch">No artists found</p>`
+    }
+    html.artists_popup.list.innerHTML = html_;
 }
 
-window.addEventListener("keypress", function(event) {
-    if (event.key === "Enter" && divs.artists) {
-      window.addArtist();
+/*
+window.addEventListener("keydown", function(event) {
+    if (!divs.artists) {
+        return;
     }
-  });
+    if (event.key === "Enter") {
+        window.addArtist();
+    } 
+});
+*/
 
 let searchq = null;
-window.addArtist = function() {
-    const input = document.getElementById("artistAddInput");
-    searchq = input.value;
-    input.value = "";
-    backend.addArtist(searchq);
+window.addArtist = function(id) {
+    document.getElementById("artistAddInput").value = "";
+    backend.addArtist(id);
 }
 
 /* Functions to manage artists, calling backend */
@@ -295,10 +321,12 @@ window.syncArtists = function() {
 }
 
 window.hideArtist = function(nr) {
+    document.getElementById("artistAddInput").value = "";
     backend.hideArtist(nr);
 }
 
 window.removeArtist = function (nr) {
+    document.getElementById("artistAddInput").value = "";
     backend.removeArtist(nr);
 }
 

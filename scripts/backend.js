@@ -150,7 +150,7 @@ function artistCallback(response) {
         
         // Update IDs of artists and add them to list
         for (let x in items) {
-            const current = { id : items[x]["id"], name : items[x]["name"], image : items[x]["images"][0]["url"], active : true, following : true};
+            const current = { id : items[x]["id"], name : items[x]["name"], image : items[x]["images"][0]["url"], active : true, following : true, added : true};
             let inList = false;
             for (let y in artists) { 
                 if (artists[y].id === current.id) {
@@ -170,44 +170,93 @@ function artistCallback(response) {
 }
 
 // Called from frontend, adds artist
-function addArtist(searchq) {
-    if (searchq === null || searchq === "") {
-        return;
-    } else if (searchq.startsWith("https")) {
-        const split = searchq.split("?")[0].split("/");
-        searchq = split[split.length-1];
-    }
-    api.call("GET", "artist_profile", searchq, onArtistFound, onArtistNotFound, searchq)
+function addArtist(id) {
+    api.call("GET", "artist_profile", id, onArtistFound, logger.error, "Artist not added")
 }
 
 // Callback if artist found by ID
 function onArtistFound(response) {
     const data = JSON.parse(response);
-    const current = { id : data["id"], name : data["name"], image : data["images"][0]["url"], active : true, following : false};
+    let image = null;
+    if (data["images"].length !== 0) {
+        image = data["images"][0]["url"];
+    } 
+    const current = { id : data["id"], name : data["name"], image : image, active : true, following : false, added : true};
     insertArtist(current);
 }
 
-// Callback if artist not found by ID, use search queue
-function onArtistNotFound(status, searchq) { 
-    if (status === 400) {
-        api.call("GET", "search_artist", searchq, searchArtistCallback,
-        logger.error, "Artist not found: Provided ID or URL is invalid. Artist name won't work, use URL instead (In Spotify click share and copy link to artist")
+// Searching for artists via search query
+function searchArtist(searchq) {
+    searchq = searchq.trim();
+    if (searchq.length == 0) {
+        targetProxy.artists = artists;
+        return;
+    }
+    if (searchq.toLowerCase().startsWith("http://") || searchq.toLowerCase().startsWith("https://")) {
+        searchq = searchq.split("artist/")[1].split("?")[0];
+        api.call("GET", "artist_profile", searchq, searchSingleArtist, logger.error, "Unknown link");
     } else {
-        logger.error, "Unknown error"
+        api.call("GET", "search_artist", searchq, searchArtistCallback, searchSingleArtistError, null);
     }
     
 }
 
-// Callback of Artist Search
+function searchSingleArtist(response) {
+    const data = JSON.parse(response);
+    let image = null;
+    if (data["images"].length !== 0) {
+        image = data["images"][0]["url"];
+    } 
+    const current = { id : data["id"], name : data["name"], image : image, active : true, following : false, added : false};
+    let found = false;
+    for (let x in artists) {
+        if (artists[x].id === current.id) {
+            found = true;
+        }
+    }
+    let results = [...artists];
+    if (!found) {
+        results.push(current);
+    }
+    targetProxy.artists = results;
+}
+
+function searchSingleArtistError() {
+    console.warn("Could not find artist via link");
+    targetProxy.artists = artists;
+}
+
+// Callback of artist search
 function searchArtistCallback(response) {
     const data = JSON.parse(response);
-    const item = data.artists.items[0];
-    if (item.name == null) {
-        console.warn("Artist not found");
-        return;
+    const item = data.artists.items;
+    console.log(item);
+    let search = [];
+    for (let i=0; i<Math.min(10,item.length); i++) {
+        if (item[i].followers.total < 100) {
+            continue;
+        }
+        if (item[i]["images"].length == 0) {
+            search.push({ id : item[i]["id"], name : item[i]["name"], image : null, active : false, following : false, added : false});
+        } else {
+            search.push({ id : item[i]["id"], name : item[i]["name"], image : item[i]["images"][0]["url"], active : false, following : false, added : false});
+        }
     }
-    const current = { id : item["id"], name : item["name"], image : item["images"][0]["url"], active : true, following : false};
-    insertArtist(current);
+    console.log(search);
+    let results = [...artists];
+    for (let i in search) {
+        let found = false;
+        for (let x in artists) {
+            if (artists[x].id === search[i].id) {
+                found = true;
+            }
+        }
+        if (!found) {
+            results.push(search[i]);
+        }
+    }
+    console.log(results);
+    targetProxy.artists = results;
 }
 
 // Insert artist
@@ -224,7 +273,7 @@ function insertArtist(current) {
 // Save to localstorage, call proxy
 function saveArtists() { 
     user.artists = artists;
-    targetProxy.artists = artists;
+    targetProxy.artists = sortArtists(artists);
     refreshAlbums();
 }
 
@@ -641,5 +690,6 @@ export default {getActiveArtists,
     saveAlbum,
     getActivePlaylist,
     albumIsSaved,
-    toggleFilters
+    toggleFilters,
+    searchArtist
 }

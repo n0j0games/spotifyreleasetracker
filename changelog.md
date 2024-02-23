@@ -1,5 +1,9 @@
 # TODO
 
+# Version 1.3.3
+
+- Improved artist search
+
 # Version 1.3.2
 
 - Added advanced filtering

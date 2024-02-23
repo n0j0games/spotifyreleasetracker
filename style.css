@@ -408,6 +408,11 @@ i {
     cursor: pointer;
 }
 
+.artistRemove:hover {
+    background-color: var(--red) !important;
+    border: 1px solid var(--red) !important;
+}
+
 /*
 .activeBtn:hover {
     background: black;
@@ -458,10 +463,10 @@ hr {
     padding: 10px;
     background-color: var(--release);
     display: block;
-    max-height: 80%;
+    height: 80%;
     overflow-y: auto;
     overflow-x: hidden;
-    min-width: 300px;
+    min-width: 350px;
     border: 1px solid var(--highlight);
 }
 
@@ -491,7 +496,7 @@ hr {
 }
 
 .artistSpotify {
-    margin: 0 10px;
+    margin: 0 10px 0 0;
     font-size: 14px;
     font-weight: 300;
     color: var(--lowlight);
@@ -513,14 +518,29 @@ hr {
     padding: 3px 5px;
     border-radius: 2px;
     margin: 5px;
-    text-transform: capitalize;
     height: 30px;
+}
+
+.manageDiv {
+    text-transform: capitalize;
 }
 
 .manageDiv {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#noartistssearch {
+    text-align: center;
+    color: var(--lowlight);
+    margin: 50px 0 0 0;
+}
+
+#searchSection {
+    text-align: center;
+    color: var(--lowlight);
+    margin: 5px 0;
 }
 
 #greenLink {
@@ -541,6 +561,7 @@ hr {
 #artistAddInput {
     flex-grow: 2;
     padding: 0;
+    margin: 5px 15px;
 }
 
 #importArtistsInput {
@@ -764,6 +785,10 @@ hr {
 
     .songLower hr {
         display: none;
+    }
+
+    .artistDiv button {
+        width: 30px;
     }
 }
 

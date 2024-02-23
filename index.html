@@ -71,14 +71,17 @@
         <ul id="artistFG">
             <div class="manageDiv">
                 <button onclick="enableArtistsDiv(false)" id="artistClose"><i class="fa-solid fa-xmark"></i></button>
-                <button onclick="syncArtists()" id="artistSync">Sync followed with Spotify</button>
+                <button onclick="syncArtists()" id="artistSync"><i class="fa-solid fa-rotate"></i> Sync with Spotify</button>
             </div>
             <li id="artistsTopContent">
                 <div class="manageDiv" id="artistAdd">
-                    <input id="artistAddInput" type="text" placeholder="Search for artist or enter directlink" >
-                    <button onclick="addArtist()" id="artistAddBtn">Add</button>
+                    <input id="artistAddInput" type="text" placeholder="Search for an artist or enter direct link" >
+                    <!--<button onclick="addArtist()" id="artistAddBtn">Add</button>-->
                 </div>
             </li>
+            <div id="artistList">
+
+            </div>
         </ul>
     </section>
     <!-- Settings --> 
@@ -137,7 +140,7 @@
                 <p class="settingsTitleText"><i class="fa-solid fa-newspaper"></i> What's New?</p>
             </li>
             <li class="manageDiv">
-                <p class="settingsInfoText"><a>Version 1.3.2:</a> Added advanced filtering</p>
+                <p class="settingsInfoText"><a>Version 1.3.2:</a> Improved artist search</p>
             </li>
             <li class="manageDiv">
                 <p class="settingsInfoText"><a>Version 1.3.0:</a> Songs from releases can now be saved to your library or playlists</p>

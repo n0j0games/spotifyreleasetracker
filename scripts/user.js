@@ -95,6 +95,10 @@ class User {
     }
 
     get artists() {
+        for (let i in this.user_.artists) {
+            this.user_.artists[i].added = true;
+            this.user_.artists[i].active = true;
+        }
         return this.user_.artists;
     }
 
