@@ -606,7 +606,7 @@ function albumIsSaved(album) {
 }
 
 let temp_album = null;
-function saveAlbum(album) {
+function saveAlbum(album, isSingle) {
     console.log("Album",album)
     temp_album = album;
     if (current_playlist === null || current_playlist.name === "none") {
@@ -625,7 +625,7 @@ function saveAlbum(album) {
     }
     user.replaceSavedPlaylist(current_playlist);
     let limit = 50;
-    if (user.not_save_doubles) {
+    if (user.not_save_doubles && isSingle) {
         limit = 1;
     }
     api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=${limit}`, saveSongsFromAlbum, logger.error, "Could not save songs");  

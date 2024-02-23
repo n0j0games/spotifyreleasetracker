@@ -521,7 +521,7 @@ hr {
     height: 30px;
 }
 
-.manageDiv {
+.manageDiv button {
     text-transform: capitalize;
 }
 

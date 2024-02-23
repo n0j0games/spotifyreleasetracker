@@ -396,10 +396,14 @@ function updateAlbumsDiv() {
         if (result.tracks !== 1) {
             htmlstring += `<button onclick="toggleSongs('${album_id}')" class="saveSongButton saveSongButtonPre" id="songListButton_${album_id}"><i class="fa-solid fa-chevron-down"></i></button>`
         }
+        let isSingle = true;
+        if (result.type.toUpperCase() === "ALBUM") {
+            isSingle = false;
+        }
         if (!(backend.albumIsSaved(album_id))) {
-            htmlstring += `<button onclick="saveAlbum('${album_id}')" class="saveSongButton saveSongButtonPre" id="saveSongButton_${album_id}"><i class="fa-regular fa-heart"></i></button>`
+            htmlstring += `<button onclick="saveAlbum('${album_id}',${isSingle})" class="saveSongButton saveSongButtonPre" id="saveSongButton_${album_id}"><i class="fa-regular fa-heart"></i></button>`
         } else {
-            htmlstring += `<button disabled onclick="saveAlbum('${album_id}')" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${album_id}"><i class="fa-solid fa-heart"></i></button>`
+            htmlstring += `<button disabled onclick="saveAlbum('${album_id}',${isSingle})" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${album_id}"><i class="fa-solid fa-heart"></i></button>`
         } 
 
         htmlstring += `</div>` // end upper content
@@ -501,12 +505,12 @@ window.toggleSingleFilter = function() {
     backend.toggleFilters(false, true, false)
 }
 
-window.saveAlbum = function(album) {
+window.saveAlbum = function(album, isSingle) {
     if (backend.getActivePlaylist() !== 'none') {
         const elem = document.getElementById(`saveSongButton_${album}`);
         elem.disabled = true;
     }
-    backend.saveAlbum(album);
+    backend.saveAlbum(album, isSingle);
 }
 
 window.toggleSongs = function(album) {
