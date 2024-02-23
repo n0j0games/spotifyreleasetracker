@@ -41,6 +41,8 @@ class User {
             "artists": null,
             "market": data.country,
             "timespan": 30,
+            "advanced_filter" : false,
+            "not_save_doubles" : false,
             "active_playlist": "your_library",
             "saved_playlists": []
         }
@@ -56,6 +58,8 @@ class User {
             "artists": artists_,
             "market": market_,
             "timespan": timespan_,
+            "advanced_filter" : false,
+            "not_save_doubles" : false,
             "active_playlist": active_playlist_,
             "saved_playlists": []
         }
@@ -96,6 +100,24 @@ class User {
 
     set artists(artists) {
         this.user_.artists = artists;
+        this.saveToLocalStorage();
+    }
+
+    get advanced_filter() {
+        return this.user_.advanced_filter;
+    }
+
+    set advanced_filter(advanced_filter) {
+        this.user_.advanced_filter = advanced_filter;
+        this.saveToLocalStorage();
+    }
+
+    get not_save_doubles() {
+        return this.user_.not_save_doubles;
+    }
+
+    set not_save_doubles(not_save_doubles) {
+        this.user_.not_save_doubles = not_save_doubles;
         this.saveToLocalStorage();
     }
 

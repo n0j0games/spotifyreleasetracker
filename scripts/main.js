@@ -56,6 +56,21 @@ window.onPageLoad = function() {
         return;
     }
 
+    // temporary bugfix: check if visited page within the last 1 minute, if not force reload without cache
+    // fixes that not all songs are shown after login, if logged in shortly before
+    const lastVisit = localStorage.getItem("lastVisit");
+    if (lastVisit !== null) {
+        const now = new Date();
+        const lastVisitDate = new Date(lastVisit);
+        if ((now.getTime() - lastVisitDate.getTime()) / (60 * 1000) > 1) {
+            console.warn("FORCE RELOAD")
+            localStorage.setItem("lastVisit", now);
+            window.location.reload(true);
+        }
+    } else {
+        localStorage.setItem("lastVisit", new Date());
+    }
+
     html.app.style.display = "none";
     if ( window.location.search.length > 0 ) {
         backend.handleRedirect();
@@ -156,8 +171,12 @@ function updateSettingsDiv() {
     const input = document.getElementById("daysInput");
     const region = document.getElementById("marketplaceInput");
     const playlist_select = document.getElementById("playlistSelect");
+    const advanced_filter = document.getElementById("advancedfilterInput");
+    const not_save_doubles = document.getElementById("savedoublesInput");
     input.value = target_.settings.timespan;
     region.value = target_.settings.market;
+    advanced_filter.checked = target_.settings.advanced_filter;
+    not_save_doubles.checked = target_.settings.not_save_doubles;
     const playlists = target_.settings.playlists;
     playlist_select.innerHTML = `
         <option value="none">None</option>
@@ -176,7 +195,10 @@ window.saveSettings = function() {
     const time = document.getElementById("daysInput").value;
     const region = document.getElementById("marketplaceInput").value;
     const active_playlist = document.getElementById("playlistSelect").value;
-    backend.saveSettings(time, region, active_playlist);
+    const advanced_filter = document.getElementById("advancedfilterInput").checked;
+    const not_save_doubles = document.getElementById("savedoublesInput").checked;
+    console.log(advanced_filter)
+    backend.saveSettings(time, region, active_playlist, advanced_filter, not_save_doubles);
 }
 
 /*

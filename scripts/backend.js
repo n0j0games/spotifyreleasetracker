@@ -94,6 +94,8 @@ function playlistCallback(response) {
         timespan : user.timespan,
         market : user.market,
         active_playlist : user.active_playlist,
+        advanced_filter : user.advanced_filter,
+        not_save_doubles : user.not_save_doubles,
         playlists : user.playlists
     };
 }
@@ -343,6 +345,7 @@ function albumCallback(response) {
         const dateArray = album.release_date.split('-');
         album.release_date = new Date(dateArray[0], dateArray[1]-1, dateArray[2]);
         const intimespan = inTimeSpan(album.release_date);
+        const passFilter = matchesFilter(album.title);
         let duplicate = false;
         for (const y in results) {
             const title_ = results[y].album.title;
@@ -352,7 +355,7 @@ function albumCallback(response) {
                 break;
             }
         }
-        if (intimespan  && !duplicate && !fromVariousArtists) {
+        if (intimespan && passFilter && !duplicate && !fromVariousArtists) {
             results.push({album});
             api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, getSongsCallback, logger.error, "Could not save songs");  
         } 
@@ -374,11 +377,14 @@ function getSongsCallback(response) {
         for (let y in items[x].artists) {
             artists.push(items[x].artists[y].name);
         }
-        songs.push({"name" : items[x].name, "artists" : artists, "id" : items[x].id});
+        if (matchesFilter(items[x].name)) {
+            songs.push({"name" : items[x].name, "artists" : artists, "id" : items[x].id});
+        }  
     }
     for (let x in results) {
         if (results[x].album.id === album_id) {
             results[x].album.songs = songs;
+            results[x].album.tracks = songs.length;
             break;
         }
     }
@@ -401,6 +407,22 @@ function inTimeSpan(date) {
     let diff = Math.abs(now - date.getTime());
     diff = diff / (1000 * 60 * 60 * 24);
     return (diff <= user.timespan)
+}
+
+function matchesFilter(string) {
+    if (!user.advanced_filter) {
+        return true;
+    }
+    string = string.toLowerCase();
+    return !(string.includes("acapella")
+    || string.includes("a capella")
+    || string.includes("a cappella")
+    || string.includes("acappella")
+    || string.includes("instrumental")
+    || string.includes("slowed")
+    || string.includes("night core")
+    || string.includes("nightcore")
+    || string.includes("sped up"));
 }
 
 /* toggles the specific filters, call via main */ 
@@ -471,7 +493,7 @@ function setCurrentPlaylist(){
 }
 
 /* called if settings change */
-function saveSettings(time, market, active_playlist) {
+function saveSettings(time, market, active_playlist, advanced_filter, not_save_doubles) {
     if (active_playlist != null) {
         user.active_playlist = active_playlist;
         setCurrentPlaylist();
@@ -485,6 +507,12 @@ function saveSettings(time, market, active_playlist) {
     }
     if (market !== null) {        
         user.market = market;
+    }
+    if (advanced_filter !== null) {
+        user.advanced_filter = advanced_filter;
+    }
+    if (not_save_doubles !== null) {
+        user.not_save_doubles = not_save_doubles;
     }
     location.reload()
 }
@@ -547,7 +575,11 @@ function saveAlbum(album) {
         current_playlist.items.shift();
     }
     user.replaceSavedPlaylist(current_playlist);
-    api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=50`, saveSongsFromAlbum, logger.error, "Could not save songs");  
+    let limit = 50;
+    if (user.not_save_doubles) {
+        limit = 1;
+    }
+    api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=${limit}`, saveSongsFromAlbum, logger.error, "Could not save songs");  
 }
 
 function saveSongsFromAlbum(response) {
@@ -559,12 +591,16 @@ function saveSongsFromAlbum(response) {
     }
     if (current_playlist.name === "your_library") {
         for (let i in data.items) {
-            songs.push(data.items[i].id);
+            if (matchesFilter(data.items[i].name)) {
+                songs.push(data.items[i].id);
+            }
         }
         api.call("PUT", "save_to_library", "?ids="+songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
     } else {
-        for (let i in data.items) {            
-            songs.push("spotify:track:"+data.items[i].id);
+        for (let i in data.items) {       
+            if (matchesFilter(data.items[i].name)) {
+                songs.push("spotify:track:"+data.items[i].id);
+            }     
         }
         const body = {"uris" : songs};
         api.call("POST", "add_to_playlist", current_playlist.name + "/tracks", saveToLibraryCallBack, logger.error, "Could not save song", body)
