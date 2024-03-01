@@ -1,5 +1,11 @@
 # TODO
 
+# Version 1.4
+
+- Added release-playlists
+- Added sorting filters
+- WIP: Added backbone for pantry
+
 # Version 1.3.3
 
 - Improved artist search

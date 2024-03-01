@@ -3,7 +3,8 @@
  * @class
 **/
 
-import SpotifyAPI from "./api.js"; 
+import SpotifyAPI from "./api.js";
+//import PantryAPI from "./pantry.js"; 
 import keys from "../apikey.js";
 import User from "./user.js";
 import logger from "./logger.js";
@@ -11,6 +12,7 @@ import targetProxy from "./main.js";
 
 const location_ = window.location.href.split("?")[0];
 const api = new SpotifyAPI(keys.id, keys.secret, location_, window.showError);
+//const pantry = new PantryAPI(window.showError);
 let user = null;
 let artists = [];
 let current_playlist = null;
@@ -24,12 +26,14 @@ let filters = {
     AUTH/LOGIN/LOGOUT
 */
 
+// Called from main, requests spotify authorization
 const requiredversion = 130;
 function auth() {
     localStorage.setItem("releasr_auth_version", requiredversion);
     api.requestAuthorization( function(url) {window.location.href = url;} );
 }
 
+// Handles redirect from spotify login page
 function handleRedirect() {
     api.handleRedirect( function() {window.history.pushState("", "", keys.uri);} );
 }
@@ -50,11 +54,14 @@ function getActivePlaylist() {
     return user.active_playlist;
 }
 
+// Logs user out, removes access/refresh token from localstorage
 function logout() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     location.reload();
 }
+
+//let temp_data = null;
 
 /* Login Step 1: Request user Info */
 function login(onLogin) {
@@ -65,21 +72,28 @@ function login(onLogin) {
         return;
     }
 
-    api.call("GET", "user_profile", null, onLogin,
-        logger.error, "Could not load user profile") //Calls Step 2
+    api.call("GET", "user_profile", null, onLogin, logger.error, "Could not load user profile") //Calls Step 2
+
+    /*api.call("GET", "user_profile", null, function(response) {
+        temp_data = JSON.parse(response);
+        pantry.call("GET", temp_data.id, onLogin, logger.error, "Could not load user profile");
+    }, logger.error, "Could not load user profile") */
 }
 
-/* Login Step 2: Called after successful login procedure */
+/* Login Step 2: Called after successful login procedure from main */
 function onLogin(response) {
-    const data = JSON.parse(response);
-    user = new User(data);
+    /*let pantry_data = null;
+    if (response != null) {
+        pantry_data = JSON.parse(response);    
+    }*/
+    user = new User(JSON.parse(response), null);
 
     api.call("GET", "playlists", null, playlistCallback, logger.error, "Could not load your profile") //Calls Step 3
 
     return user.getProfile();
 }
 
-/* Login Step 3 */
+/* Login Step 3: Callback from playlists, loads user info */
 function playlistCallback(response) {
     let list = []
     const data = JSON.parse(response).items;
@@ -89,12 +103,14 @@ function playlistCallback(response) {
     }
     user.playlists = list;
     setCurrentPlaylist();
+    loadReleasePlaylists();
     loadArtists(); //Calls Step 4
     targetProxy.settings = {
         timespan : user.timespan,
         market : user.market,
         active_playlist : user.active_playlist,
         advanced_filter : user.advanced_filter,
+        sort_by : user.sort_by,
         not_save_doubles : user.not_save_doubles,
         playlists : user.playlists
     };
@@ -104,13 +120,12 @@ function playlistCallback(response) {
     ARTIST SECTION
 */
 
-/* Login Step 4: Loading Artists, after Playlist is set*/
+/* Login Step 4: Loading Artists, after Playlist is set */
 function loadArtists() {
     artists = user.artists;
     if (artists !== null) {
-        console.log("Loaded artists")
         if (artists.length === 0) {
-            targetProxy.albums = [];
+            getSongsFromPlaylists();
             return;
         } else {
             artists = sortArtists(artists);
@@ -118,10 +133,19 @@ function loadArtists() {
             refreshAlbums();
         }
     } else {
-        console.log("Reset & reload artists");
         artists = [];
         api.call("GET", "followed_artists", null, artistCallback,
             logger.error, "Could not load artists" );
+    }
+}
+
+/* Login Step 4: Loading List of Release-Playlists */
+function loadReleasePlaylists() {
+    const playlists = user.release_playlists;
+    if (playlists !== null) {
+        targetProxy.playlists = sortArtists(playlists);
+    } else {
+        targetProxy.playlists = [];
     }
 }
 
@@ -197,10 +221,10 @@ function searchArtist(searchq) {
         api.call("GET", "artist_profile", searchq, searchSingleArtist, logger.error, "Unknown link");
     } else {
         api.call("GET", "search_artist", searchq, searchArtistCallback, searchSingleArtistError, null);
-    }
-    
+    } 
 }
 
+// Callback if single artist is loaded from url
 function searchSingleArtist(response) {
     const data = JSON.parse(response);
     let image = null;
@@ -221,16 +245,16 @@ function searchSingleArtist(response) {
     targetProxy.artists = results;
 }
 
+// Error callback if single artist is loaded from url
 function searchSingleArtistError() {
     console.warn("Could not find artist via link");
     targetProxy.artists = artists;
 }
 
-// Callback of artist search
+// Callback of artist search NOT from url
 function searchArtistCallback(response) {
     const data = JSON.parse(response);
     const item = data.artists.items;
-    console.log(item);
     let search = [];
     for (let i=0; i<Math.min(10,item.length); i++) {
         if (item[i].followers.total < 100) {
@@ -242,7 +266,6 @@ function searchArtistCallback(response) {
             search.push({ id : item[i]["id"], name : item[i]["name"], image : item[i]["images"][0]["url"], active : false, following : false, added : false});
         }
     }
-    console.log(search);
     let results = [...artists];
     for (let i in search) {
         let found = false;
@@ -255,7 +278,6 @@ function searchArtistCallback(response) {
             results.push(search[i]);
         }
     }
-    console.log(results);
     targetProxy.artists = results;
 }
 
@@ -306,6 +328,7 @@ function syncArtists() {
             logger.error, "Could not load artists" );
 }
 
+// Returns a list of active artists
 function getActiveArtists() {
     let c = 0
     for (let x in artists) {
@@ -316,9 +339,102 @@ function getActiveArtists() {
     return c;
 }
 
+// Returns the amount of release-playlists
+function getReleasePlaylistCount() {
+    return user.release_playlists.length;
+}
+
+// Sorts artists, also used for release-playlists
 function sortArtists(temp) {
     temp.sort((a,b) => a.name.localeCompare(b.name));
     return temp;
+}
+
+/*
+    RELEASE-PLAYLISTS SECTION
+*/
+
+// Search for playlists via search query
+function searchPlaylist(searchq) {
+    searchq = searchq.trim();
+    if (searchq.length == 0) {
+        targetProxy.playlists = user.release_playlists;
+        return;
+    }
+    api.call("GET", "search_playlist", searchq, searchPlaylistCallback, logger.error, "Error while loading playlists");
+}
+
+// Callback after search for playlists
+function searchPlaylistCallback(response) {
+    const release_playlists = user.release_playlists;
+    const data = JSON.parse(response);
+    const item = data.playlists.items;
+    let search = [];
+    for (let i=0; i<Math.min(10,item.length); i++) {
+        if (item[i]["images"].length == 0) {
+            search.push({ id : item[i]["id"], name : item[i]["name"], image: null, owner: item[i]["owner"]["display_name"], added : false});
+        } else {
+            search.push({ id : item[i]["id"], name : item[i]["name"], image: item[i]["images"][0]["url"], owner: item[i]["owner"]["display_name"], added : false});
+        }
+        
+    }
+    let results = [...release_playlists];
+    for (let i in search) {
+        let found = false;
+        for (let x in release_playlists) {
+            if (release_playlists[x].id === search[i].id) {
+                found = true;
+            }
+        }
+        if (!found) {
+            results.push(search[i]);
+        }
+    }
+    targetProxy.playlists = results;
+}
+
+// Adds certein playlist to list of release playlists
+function addPlaylist(id) {
+    api.call("GET", "playlist", id, onPlaylistFound, logger.error, "Playlist not added")
+}
+
+// Callback if playlist found by ID
+function onPlaylistFound(response) {
+    const data = JSON.parse(response);
+    let image = null;
+    if (data["images"].length !== 0) {
+        image = data["images"][0]["url"];
+    } 
+    const current = { id : data["id"], name : data["name"], image: image, owner: data["owner"]["display_name"], added : true};
+    insertPlaylist(current);
+}
+
+// Insert playlist
+function insertPlaylist(current) {
+    const playlists = user.release_playlists;
+    for (let x in playlists) {
+        if (playlists[x].id === current.id) {
+            return;
+        }
+    }
+    playlists.unshift(current);
+    saveReleasePlaylists(playlists);
+}
+
+// Save to localstorage, call proxy
+function saveReleasePlaylists(playlists) { 
+    user.release_playlists = playlists;
+    targetProxy.playlists = playlists;
+    refreshAlbums();
+}
+
+function removePlaylist(nr) {
+    const playlists = user.release_playlists;
+    for (let k in playlists) {
+        if (playlists[nr].name === playlists[k].name)
+            playlists.splice(nr, 1);
+    }
+    saveReleasePlaylists(playlists);
 }
 
 /*
@@ -332,7 +448,7 @@ let total_ = 0
 function refreshAlbums() {
     results = [];
     if (artists.size === 0) {
-        targetProxy.albums = [];
+        getSongsFromPlaylists();
         return
     }
     
@@ -345,78 +461,134 @@ function refreshAlbums() {
         }
     }
     if (total_ === 0) {
-        targetProxy.albums = [];
+        getSongsFromPlaylists();
         return;
     }
+    
+    // !: Hotfix to supress content-caching, adds unused date tag to url
+    const date = new Date().getDate();
+    console.log(date);
+
     for (let x in active_artists) {
-        const param = `${active_artists[x].id}/albums?limit=50&include_groups=album,single`
+        const param = `${active_artists[x].id}/albums?limit=50&include_groups=album,single&date=${date}`;
         api.call("GET", "artist", param, albumCallback, logger.error, "Could not load albums for artist")
     }
 }
 
 function albumCallback(response) {
-    const searched_artist = JSON.parse(response).href.split("/")[5];
+    //const searched_artist = JSON.parse(response).href.split("/")[5];
     const items = JSON.parse(response).items;
     for (let x in items) {
         const item = items[x];
-        let album = {
-            id : item.external_urls.spotify.split("/")[4],
-            title : item.name,            
-            artist : item.artists[0].name,
-            type : item.album_type,
-            href : item.external_urls.spotify,
-            image : item.images[0].url,
-            artists_list : [],
-            real_date : item.release_date,
-            release_date : item.release_date,
-            tracks : item.total_tracks,
-            markets : item.available_markets,
-            searched_artist : searched_artist,
-            isfeature : true,
-            show : true,
-            songs : []
-        }
-        for (const y in item.artists) {
-            album.artists_list.push(item.artists[y].name);
-        }
-        let fromVariousArtists = false;
-        for (const z in album.artists_list) {
-            if (album.artists_list[z]["id"] === "0LyfQWJT6nXafLPZqxe9Of")
-                fromVariousArtists = true;
-        }
-        for (const y in artists) {
-            const temp = artists[y].name;
-            if (album.artist.toLowerCase() === temp.toLowerCase()) {
-                album.isfeature = false;
-                break;
-            }
-        }
-        const dateArray = album.release_date.split('-');
-        album.release_date = new Date(dateArray[0], dateArray[1]-1, dateArray[2]);
-        const intimespan = inTimeSpan(album.release_date);
-        const passFilter = matchesFilter(album.title);
-        let duplicate = false;
-        for (const y in results) {
-            const title_ = results[y].album.title;
-            const artist_ = results[y].album.artist;
-            if (album.title === title_ && album.artist === artist_) {
-                duplicate = true;
-                break;
-            }
-        }
-        if (intimespan && passFilter && !duplicate && !fromVariousArtists) {
-            results.push({album});
-            api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, getSongsCallback, logger.error, "Could not save songs");  
+        let album = getAlbum(item, "");        
+        if (album !== null) {
+            api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function(response_) {
+                getSongsCallback(response_, album);
+            }, logger.error, "Could not save songs");
         } 
     }
     total_--;
     if (total_ === 0) {
-        results = sortResults(results);
+        //results = sortResults(results);
+        //filterAlbums();
+        getSongsFromPlaylists();
+    }
+}
+
+// Gets album from album item
+function getAlbum(item, playlist){
+    let album = {
+        id : item.external_urls.spotify.split("/")[4],
+        title : item.name,            
+        artist : item.artists[0].name,
+        type : item.album_type,
+        href : item.external_urls.spotify,
+        image : item.images[0].url,
+        artists_list : [],
+        real_date : item.release_date,
+        release_date : item.release_date,
+        tracks : item.total_tracks,
+        markets : item.available_markets,
+        isfeature : true,
+        show : true,
+        shown_in : playlist,
+        songs : [],
+        dummy : 0
+    }
+    for (const y in item.artists) {
+        album.artists_list.push(item.artists[y].name);
+    }
+    let fromVariousArtists = false;
+    for (const z in album.artists_list) {
+        if (album.artists_list[z]["id"] === "0LyfQWJT6nXafLPZqxe9Of")
+            fromVariousArtists = true;
+    }
+    for (const y in artists) {
+        const temp = artists[y].name;
+        if (album.artist.toLowerCase() === temp.toLowerCase()) {
+            album.isfeature = false;
+            break;
+        }
+    }
+    const dateArray = album.release_date.split('-');
+    album.release_date = new Date(dateArray[0], dateArray[1]-1, dateArray[2]);
+    const intimespan = inTimeSpan(album.release_date);
+    const passFilter = matchesFilter(album.title);
+    let duplicate = false;
+    for (const y in results) {
+        const title_ = results[y].album.title;
+        const artist_ = results[y].album.artist;
+        if (album.title === title_ && album.artist === artist_) {
+            duplicate = true;
+            break;
+        }
+    }
+    if (intimespan && passFilter && !duplicate && !fromVariousArtists) {
+        return album; 
+    }
+    return null;
+}
+
+// Add songs from release-playlists
+function getSongsFromPlaylists() {
+    const playlists = user.release_playlists;
+
+    if (playlists.length === 0) {
+        filterAlbums();
+        return;
+    }
+
+    for (let x in playlists) {
+        api.call("GET", "playlist", `${playlists[x].id}/tracks?limit=50`, function(response) {
+            getPlaylistSongsCallback(response, playlists[x].name);    
+        }, logger.error, "Could not load songs from playlist");
+    }
+}
+
+// Callback after loading songs from release-playlists
+function getPlaylistSongsCallback(response, name) {
+    let items = JSON.parse(response);
+    let found = false;
+    for (let x in items.items) {
+        if (items.items[x].track === null) {
+            continue;
+        }
+        let item = items.items[x].track.album;
+        let album = getAlbum(item, name);
+        if (album !== null) {
+            found = true;
+            api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function (response) {
+                getSongsCallback(response, album);
+            }, logger.error, "Could not save songs");  
+        }
+    }
+    if (found === false) {
         filterAlbums();
     }
 }
 
-function getSongsCallback(response) {
+// Callback after loading songs from album, adds songs to results
+function getSongsCallback(response, album) {
     const data = JSON.parse(response);
     const album_id = data.href.split("/")[5];
     const items = data.items;
@@ -430,24 +602,53 @@ function getSongsCallback(response) {
             songs.push({"name" : items[x].name, "artists" : artists, "id" : items[x].id});
         }  
     }
-    for (let x in results) {
-        if (results[x].album.id === album_id) {
-            results[x].album.songs = songs;
-            results[x].album.tracks = songs.length;
-            break;
+    album.songs = songs;
+    album.tracks = songs.length;
+
+    if (album.tracks === 1) {
+        let artists_ = album.songs[0].artists;
+        for (let x in artists_) {
+            let found = false;
+            for (let y in album.artists_list) {
+                if (album.artists_list[y] === artists_[x]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                album.artists_list.push(artists_[x]);
+            }
         }
     }
+
+    results.push({album});
     results = sortResults(results);
     filterAlbums();
 }
 
 /* sort by date & main artist */
 function sortResults(temp) {
-    temp.sort((a,b) => a.album.artist.localeCompare(b.album.artist));
-    temp.sort((a,b) => b.album.release_date.getTime() - a.album.release_date.getTime());
+    const sort_by = user.sort_by;
+    if (sort_by === "release_date") {
+        temp.sort((a,b) => a.album.shown_in.localeCompare(b.album.shown_in));
+        temp.sort((a,b) => a.album.artist.localeCompare(b.album.artist));
+        temp.sort((a,b) => b.album.release_date.getTime() - a.album.release_date.getTime());        
+    } else if (sort_by === "alphabetical") {
+        temp.sort((a,b) => a.album.shown_in.localeCompare(b.album.shown_in));
+        temp.sort((a,b) => b.album.release_date.getTime() - a.album.release_date.getTime());
+        temp.sort((a,b) => a.album.artist.localeCompare(b.album.artist));
+    } else if (sort_by === "playlist") {
+        temp.sort((a,b) => a.album.artist.localeCompare(b.album.artist));
+        temp.sort((a,b) => b.album.release_date.getTime() - a.album.release_date.getTime());
+        temp.sort((a,b) => a.album.shown_in.localeCompare(b.album.shown_in));
+    } else {
+        logger.error("Could not sort albums", "Unknown sort_by value");
+    }
+    
     return temp;
 }
 
+// Check if release is in timespan
 function inTimeSpan(date) {
     if (user.timespan === -1) {
         return true;
@@ -458,6 +659,7 @@ function inTimeSpan(date) {
     return (diff <= user.timespan)
 }
 
+// Check if string matches filter
 function matchesFilter(string) {
     if (!user.advanced_filter) {
         return true;
@@ -501,8 +703,11 @@ function toggleFilters(album, single, feature) {
     filterAlbums();
 }
 
-/* filters each album and sends them back to main*/
+/* filters each album and sends them back to main, also removes duplicates */
 function filterAlbums() {
+    removeDuplicates(results);
+    
+    console.warn(results);
     for (let x in results) {
         if (filters.feature && results[x].album.isfeature) {
             results[x].album.show = false;
@@ -515,6 +720,18 @@ function filterAlbums() {
         }
     }
     targetProxy.albums = results;
+}
+
+// Removes duplicates from results
+function removeDuplicates(temp) {
+    for (let i=0; i<temp.length; i++) {
+        for (let j=i+1; j<temp.length; j++) {
+            if (temp[i].album.id === temp[j].album.id) {
+                temp.splice(i, 1);
+                i--;
+            }
+        }
+    }
 }
 
 /*
@@ -542,7 +759,7 @@ function setCurrentPlaylist(){
 }
 
 /* called if settings change */
-function saveSettings(time, market, active_playlist, advanced_filter, not_save_doubles) {
+function saveSettings(time, market, active_playlist, advanced_filter, not_save_doubles, sort_by) {
     if (active_playlist != null) {
         user.active_playlist = active_playlist;
         setCurrentPlaylist();
@@ -563,6 +780,9 @@ function saveSettings(time, market, active_playlist, advanced_filter, not_save_d
     if (not_save_doubles !== null) {
         user.not_save_doubles = not_save_doubles;
     }
+    if (sort_by !== null) {
+        user.sort_by = sort_by;
+    }
     location.reload()
 }
 
@@ -581,7 +801,6 @@ function importData(value) {
 async function exportData() {
     try {
         await navigator.clipboard.writeText(JSON.stringify((user.exportUser())));
-        console.log('Content copied to clipboard');
         logger.log('Copied to clipbard', "You can now save the clipboard into a file and paste it back in the settings to restore your data later")
     } catch (err) {
         logger.error('Failed to copy data', err)
@@ -592,6 +811,7 @@ async function exportData() {
 function deleteData() {
     localStorage.removeItem("user_"+user.id);
     logout();
+    //pantry.call("DELETE", user.id, logout, logger.error, "Could not delete user from pantry");
 }
 
 /*
@@ -607,7 +827,6 @@ function albumIsSaved(album) {
 
 let temp_album = null;
 function saveAlbum(album, isSingle) {
-    console.log("Album",album)
     temp_album = album;
     if (current_playlist === null || current_playlist.name === "none") {
         logger.log("Could not save song", "You have selected 'None' as your playlist, therefore the song could not be saved. Please select a playlist in the settings");
@@ -691,5 +910,9 @@ export default {getActiveArtists,
     getActivePlaylist,
     albumIsSaved,
     toggleFilters,
-    searchArtist
+    searchArtist,
+    searchPlaylist,
+    addPlaylist,
+    removePlaylist,
+    getReleasePlaylistCount,
 }

@@ -1,5 +1,5 @@
 /**
- * Frontend. Calls the backend and sets HTML elements if backend changes
+ * Main class for the frontend, handles all UI updates and user interactions
  * @class
 **/
 
@@ -17,6 +17,13 @@ const html = {
         inner : document.getElementById("artistFG").innerHTML,
         input : document.getElementById("artistAddInput"),
         list : document.getElementById("artistList")
+    },
+    playlist_popup: {
+        popup : document.getElementById("playlistPopup"),
+        item : document.getElementById("playlistFG"),
+        inner : document.getElementById("playlistFG").innerHTML,
+        input : document.getElementById("playlistAddInput"),
+        list : document.getElementById("playlistList")
     },
     releases : {
         item : document.getElementById("releases"),
@@ -55,21 +62,6 @@ window.onPageLoad = function() {
     if (!(locations.includes(location))) {
         console.error("wrong uri", locations, location);
         return;
-    }
-
-    // temporary bugfix: check if visited page within the last 1 minute, if not force reload without cache
-    // fixes that not all songs are shown after login, if logged in shortly before
-    const lastVisit = localStorage.getItem("lastVisit");
-    if (lastVisit !== null) {
-        const now = new Date();
-        const lastVisitDate = new Date(lastVisit);
-        if ((now.getTime() - lastVisitDate.getTime()) / (60 * 1000) > 1) {
-            console.warn("FORCE RELOAD")
-            localStorage.setItem("lastVisit", now);
-            window.location.reload(true);
-        }
-    } else {
-        localStorage.setItem("lastVisit", new Date());
     }
 
     html.app.style.display = "none";
@@ -113,7 +105,8 @@ window.logout = function () {
 /* Stores if divs are active or not */ 
 let divs = {
     artists : false,
-    settings : false
+    settings : false,
+    playlist : false,
 }
 
 /* Proxy, handles backend changes automatically */
@@ -128,6 +121,8 @@ const targetProxy = new Proxy(target_, {
         if (key == "artists" && divs.artists) {
             document.getElementById("artistSync").innerHTML = `<i class="fa-solid fa-rotate"></i>Sync with Spotify`;
             updateArtistsDiv()
+        } else if (key == "playlists" && divs.playlist) {
+            updatePlaylistDiv();
         } else if (key == "settings" && divs.settings) {
             updateSettingsDiv()
         } else if (!divs.settings && !divs.artists) {
@@ -173,6 +168,7 @@ function updateSettingsDiv() {
     const input = document.getElementById("daysInput");
     const region = document.getElementById("marketplaceInput");
     const playlist_select = document.getElementById("playlistSelect");
+    const sort_select = document.getElementById("sortSelect");
     const advanced_filter = document.getElementById("advancedfilterInput");
     const not_save_doubles = document.getElementById("savedoublesInput");
     input.value = target_.settings.timespan;
@@ -191,6 +187,7 @@ function updateSettingsDiv() {
         playlist_select.appendChild(option);
     }
     playlist_select.value = target_.settings.active_playlist;
+    sort_select.value = target_.settings.sort_by;
 }
 
 window.saveSettings = function() {
@@ -199,8 +196,92 @@ window.saveSettings = function() {
     const active_playlist = document.getElementById("playlistSelect").value;
     const advanced_filter = document.getElementById("advancedfilterInput").checked;
     const not_save_doubles = document.getElementById("savedoublesInput").checked;
-    console.log(advanced_filter)
-    backend.saveSettings(time, region, active_playlist, advanced_filter, not_save_doubles);
+    const sort_by = document.getElementById("sortSelect").value;
+    backend.saveSettings(time, region, active_playlist, advanced_filter, not_save_doubles, sort_by);
+}
+
+/*
+    RELEASE-PLAYLIST DIV
+*/
+
+window.enablePlaylistDiv = function (enable) {
+    if (enable) {
+        document.getElementById("playlistAddInput").value = "";
+        html.playlist_popup.popup.style.display = "flex";
+        document.body.style.overflow = "hidden";
+        divs.playlist = true;
+        backend.searchPlaylist("");
+    } else {
+        document.body.style.overflow = "auto";
+        html.playlist_popup.popup.style.display = "none";
+        divs.playlist = false;
+        backend.refreshAlbums();
+    }
+}
+
+const playlist_input = document.getElementById("playlistAddInput");
+playlist_input.addEventListener("input", function() {
+    backend.searchPlaylist(playlist_input.value);
+});
+
+/* Build artist div after artists change */
+function updatePlaylistDiv() {
+    const query = document.getElementById("playlistAddInput").value
+    if (!divs.playlist) {
+        console.warn("Updated playlist div, even though its inactive")
+    }
+    if (target_.playlists === undefined) {
+        console.error("Updated playlists div, even though playlists are null");
+        return;
+    }
+    let html_ = "";
+    let inSearchSection = false;
+
+    for (let x in target_.playlists) {
+        if (target_.playlists[x].added !== false && query !== "" && target_.playlists[x].name.toLowerCase().includes(query.toLowerCase()) === false) {
+            continue;
+        }
+        if (!inSearchSection && target_.playlists[x].added === false) {
+            inSearchSection = true;
+            html_ += `<p id="searchSection"><i class="fa-brands fa-spotify"></i> Search Suggestions</p>`
+        }
+        html_ += `<li id="playlist-${x}" class="playlistDiv">`;
+        if (target_.playlists[x].image !== null) {
+            html_ += `<img src="${target_.playlists[x].image}" alt=""></img>`;
+        } else {
+            html_ += `<img src="images/profilepic_gray.png" alt=""></img>`;
+        }
+        html_ += `
+        <div class="playlistTitleDiv">
+        <p class="playlistTitle">${target_.playlists[x].name}</p>
+        <p class="playlistOwner">${target_.playlists[x].owner}</p>
+        </div>
+        `;
+        if (!target_.playlists[x].added) {
+            html_ += `<button onclick="addPlaylist('${target_.playlists[x].id}')"><i class="fa-solid fa-plus"></i></button></li>`
+        } else {
+            html_ += `<button class="artistRemove" onclick="removePlaylist(${x})"><i class="fa-solid fa-minus"></i></button></li>`;
+        }
+    }
+
+    if (html_.length === 0 && query === "") {
+        html_ += `<div id="noartistssearch">
+        <img src="images/releaseplaylist_feature.png">
+        <p><span>NO PLAYLISTS ADDED</span><br>Add several playlists like "Release Radar" or "New Music Friday" and we will extract new releases from those lists</p></div>`
+    } else if (html_.length === 0) {
+        html_ += `<div id="noartistssearch"><p>No playlists found for your search</p></div>`
+    }
+    html.playlist_popup.list.innerHTML = html_;
+}
+
+window.addPlaylist = function(id) {
+    document.getElementById("playlistAddInput").value = "";
+    backend.addPlaylist(id);
+}
+
+window.removePlaylist = function (nr) {
+    document.getElementById("playlistAddInput").value = "";
+    backend.removePlaylist(nr);
 }
 
 /*
@@ -238,9 +319,6 @@ function updateArtistsDiv() {
         console.error("Updated artists div, even though artists are null");
         return;
     }
-    if (target_.artists.length === 0) {
-        html.artists_popup.item.innerHTML = html.artists_popup.inner;
-    }
     let html_ = "";
     let inSearchSection = false;
     for (let x in target_.artists) {
@@ -268,8 +346,12 @@ function updateArtistsDiv() {
 
         }
     }
-    if (html_.length === 0) {
-        html_ += `<p id="noartistssearch">No artists found</p>`
+    if (html_.length === 0 && query === "") {
+        html_ += `<div id="noartistssearch">
+        <img src="images/artists_feature.png">
+        <p><span>NO ARTISTS ADDED</span><br>Add your favorite artists to this list and we will display the newest releases from them</p></div>`
+    } else if (html_.length === 0) {
+        html_ += `<p id="noartistssearch">No artists found for your search</p>`
     }
     html.artists_popup.list.innerHTML = html_;
 }
@@ -285,7 +367,6 @@ window.addEventListener("keydown", function(event) {
 });
 */
 
-let searchq = null;
 window.addArtist = function(id) {
     document.getElementById("artistAddInput").value = "";
     backend.addArtist(id);
@@ -341,7 +422,7 @@ function updateAlbumsDiv() {
     }
 
     html.spinner.style.display = "none";
-    html.search_query_info.innerHTML = `Showing releases for ${backend.getActiveArtists()} artists in the last ${backend.getTimespan()} days`;
+    html.search_query_info.innerHTML = `Showing releases for ${backend.getActiveArtists()} artists & ${backend.getReleasePlaylistCount()} playlists in the last ${backend.getTimespan()} days`;
 
     // If no albums available: show empty list
     if (target_.albums.length === 0) {
@@ -362,6 +443,9 @@ function updateAlbumsDiv() {
         if (result.title.length >= 60) {
             result.title = result.title.substring(0, 59) + "...";
         }
+
+        result.dummy++;
+
         let artist_string = "";
         for (const z in result.artists_list) {
             artist_string += result.artists_list[z] + " &#8226; ";
@@ -382,15 +466,18 @@ function updateAlbumsDiv() {
                 <p class="releaseName">${result.title}</p>
                 <p class="releaseArtist">${artist_string}</p>                
             </div><div class="lowerContent">`
+        if (result.shown_in !== "") {
+            htmlstring += `<p class="releasePlaylist"><i class="fa-solid fa-bars-staggered"></i> ${result.shown_in.toUpperCase().trim()}</p>`;
+        }
         if (result.tracks !== 1) {
             htmlstring += `<p class="releaseType"><i class="fas fa-music"></i> ${result.tracks}</p>`;
         }
         htmlstring += `<p class="releaseType"><i class="fas fa-compact-disc"></i> ${result.type.toUpperCase()}</p>`;
-        if (!result.markets.includes(backend.getMarket())) {
+        /*if (!result.markets.includes(backend.getMarket())) {
             htmlstring += `<p class="releaseUnreleased"><i class="fa-solid fa-clock"></i> UNRELEASED</p>`;
-        } else {
+        } else {*/
             htmlstring += `<p class="releaseDate"><i class="fas fa-calendar"></i> ${dateToDEFormat(result.release_date,result.real_date)}</p>`;
-        }
+        /*}*/
         htmlstring += `</div></a>`;
         const album_id = result.href.split("/")[4];
         if (result.tracks !== 1) {
@@ -483,13 +570,13 @@ function updateFilterOverlay() {
         html.filters.single.classList.remove("inactiveBtn");
         html.filters.single.classList.add("activeBtn");
     }
-    if (!filters.feature) {
+    /*if (!filters.feature) {
         html.filters.feature.classList.add("inactiveBtn");
         html.filters.feature.classList.remove("activeBtn");
     } else {
         html.filters.feature.classList.remove("inactiveBtn");
         html.filters.feature.classList.add("activeBtn");
-    }
+    }*/
 }
 
 /* Toggles filters */

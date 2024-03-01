@@ -9,12 +9,14 @@ const urls = {
     followed_artists: 'https://api.spotify.com/v1/me/following?type=artist&limit=50',
     artist_profile: 'https://api.spotify.com/v1/artists/',
     search_artist: 'https://api.spotify.com/v1/search?type=artist&q=',
+    search_playlist: 'https://api.spotify.com/v1/search?type=playlist&q=',
     user_profile: 'https://api.spotify.com/v1/me',
     album_tracks: 'https://api.spotify.com/v1/albums/',
     artist: 'https://api.spotify.com/v1/artists/',
     playlists : 'https://api.spotify.com/v1/me/playlists?limit=50',
     save_to_library: 'https://api.spotify.com/v1/me/tracks',
     add_to_playlist: 'https://api.spotify.com/v1/playlists/',
+    playlist: 'https://api.spotify.com/v1/playlists/',
 }
 
 /* Serves as the base for the Spotify API */

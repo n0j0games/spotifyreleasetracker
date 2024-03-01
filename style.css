@@ -108,7 +108,7 @@ p {
 
 #previewDiv img {
     height: 500px;
-    margin: 20px;
+    margin: 10px;
     border-radius: 15px;
 }
 
@@ -300,7 +300,7 @@ i {
     margin: 3px 5px 10px 5px;
 }
 
-.releaseType, .releaseDate, .releaseUnreleased {
+.releaseType, .releaseDate, .releaseUnreleased, .releasePlaylist {
     margin: 0 10px 0 0;
 }
 
@@ -443,7 +443,7 @@ hr {
     border: solid 1px var(--highlight);
 }
 
-#artistPopup, #albumPopup, #settingsPopup {
+.divPopup, #albumPopup, #settingsPopup {
     position: fixed;
     top: 0;
     left: 0;
@@ -459,7 +459,7 @@ hr {
     justify-content: center;
 }
 
-#artistFG, #settingsFG {
+.divFG, #settingsFG {
     padding: 10px;
     background-color: var(--release);
     display: block;
@@ -470,7 +470,7 @@ hr {
     border: 1px solid var(--highlight);
 }
 
-.artistDiv {
+.artistDiv, .playlistDiv {
     width: calc(100% - 20px);
     padding: 5px 10px;
     display: flex;
@@ -479,7 +479,7 @@ hr {
     justify-content: center;
 }
 
-.artistDiv:hover {
+.artistDiv:hover, .playlistDiv:hover {
     background-color: var(--highlight);
 }
 
@@ -490,9 +490,20 @@ hr {
     margin: 5px;
 }
 
-.artistTitle {
+.playlistDiv img {
+    width: 45px;
+    height: 45px;
+    margin: 5px;
+}
+
+.artistTitle, .playlistTitleDiv {
     margin: 5px;
     flex-grow: 2;
+}
+
+.playlistOwner {
+    font-weight: 300;
+    color: var(--lowlight);
 }
 
 .artistSpotify {
@@ -508,7 +519,7 @@ hr {
     border: 1px solid var(--red) !important;
 }
 
-.manageDiv button, .manageDiv select, .artistDiv button, .manageDiv input, #artistClose, #settingsClose {
+.manageDiv button, .manageDiv select, .artistDiv button, .playlistDiv button, .manageDiv input, .divClose, #settingsClose {
     font-family: 'Chakra Petch', sans-serif;
     font-size: 14px;
     background-color: transparent;
@@ -532,9 +543,24 @@ hr {
 }
 
 #noartistssearch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#noartistssearch p {
     text-align: center;
     color: var(--lowlight);
-    margin: 50px 0 0 0;
+    max-width: 350px;
+}
+
+#noartistssearch img {
+    width: 300px;
+}
+
+#noartistssearch span {
+    color: white;
 }
 
 #searchSection {
@@ -558,7 +584,7 @@ hr {
     background-color: var(--highlight);
 }
 
-#artistAddInput {
+.divAddInput {
     flex-grow: 2;
     padding: 0;
     margin: 5px 15px;
@@ -575,7 +601,7 @@ hr {
 }
 
 
-#settingsPopup button:hover, #artistPopup button:hover {
+#settingsPopup button:hover, .divPopup button:hover {
     color: black;
     background-color: var(--green);
     border: 1px solid var(--green);
@@ -674,11 +700,11 @@ hr {
         justify-content: center;
     }
 
-    #artistPopup, #albumPopup, #settingsPopup {
+    .divPopup, #albumPopup, #settingsPopup {
         background-color: var(--release);
     }
 
-    #artistFG, #settingsFG {
+    .divFG, #settingsFG {
         width: 100%;
         height: 100%;
         padding: 0;
@@ -689,7 +715,7 @@ hr {
         padding: 0 0 100px 0;
     }
 
-    #artistClose, #settingsClose {
+    .divClose, #settingsClose {
         margin: 15px;
     }
 
@@ -787,7 +813,7 @@ hr {
         display: none;
     }
 
-    .artistDiv button {
+    .artistDiv button, .playlistDiv button {
         width: 30px;
     }
 }

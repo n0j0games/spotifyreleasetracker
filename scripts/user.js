@@ -2,51 +2,69 @@
  * User class. Stores users settings and informations
  * @class
  * @param {Object} data - User data from Spotify API
+ * @param {Object} pantry - Saved pantry Data
 **/
 
+//import PantryAPI from "./pantry.js"; 
+//const pantry = new PantryAPI();
+
 class User {
-    constructor(data) {
+    constructor(data, pantry_data) {
         // Load user info which will not be saved;
         this.id = data.id;
         this.displayname = data.display_name;
-        this.playlists = []
-        this.image = data.images[0].url;
-        if (this.image === null) {
+        this.playlists = [];
+        if (data.images.length > 0) {
+            this.image = data.images[0].url;
+        } else {
             this.image = "../images/profilepic.png";
         }
 
         // Load stored data
-        const raw = localStorage.getItem("user_"+this.id);
-        const oldartists_ = localStorage.getItem("artists"+this.id);
-        if (raw === null && oldartists_ !== null) {
-            console.log("Converting old format to new format")
-            this.convertToNewFormat();
-        } else if (raw === null) {
-            console.log("Create new user")
-            this.createUser(data);
-        } else {
-            try {
-                this.user_ = JSON.parse(raw);
-                console.log("Logging in as", this.displayname)
-            } catch (e) {
-                logger.error("Could not load user", e)
+        /*if (usePantry && pantry_data !== null && pantry_data.artists !== null) {
+            this.user_ = pantry_data;
+            this.saveToLocalStorage(false);
+            console.log("Logging in as", this.displayname, "via pantry data")
+        } else { */
+            const raw = localStorage.getItem("user_"+this.id);
+            const oldartists_ = localStorage.getItem("artists"+this.id);
+            if (raw === null && oldartists_ !== null) {
+                console.log("Converting old format to new format")
+                this.convertToNewFormat();
+            } else if (raw === null) {
+                console.log("Create new user")
+                this.createUser(data);
+            } else {
+                try {
+                    this.user_ = JSON.parse(raw);
+                    if (this.user_.release_playlists === undefined) {
+                        this.user_.release_playlists = [];
+                    }
+                    if (this.user_.sort_by === undefined) {
+                        this.user_.sort_by = "release_date";
+                    }
+                    //this.saveToPantry();                
+                    console.log("Logging in as", this.displayname)
+                } catch (e) {
+                    logger.error("Could not load user", e)
+                }
             }
-        }
+        /*}*/
 
-        
     }
 
     createUser(data) {
         this.user_ = {
             "artists": null,
             "market": data.country,
-            "timespan": 30,
+            "timespan": 7,
             "advanced_filter" : false,
             "not_save_doubles" : false,
             "active_playlist": "your_library",
-            "saved_playlists": []
+            "sort_by" : "release_date",
+            "saved_playlists": [],
+            "release_playlists" : []
         }
-        this.saveToLocalStorage();
     }
 
     convertToNewFormat() {
@@ -61,7 +79,9 @@ class User {
             "advanced_filter" : false,
             "not_save_doubles" : false,
             "active_playlist": active_playlist_,
-            "saved_playlists": []
+            "sort_by" : "release_date",
+            "saved_playlists": [],
+            "release_playlists" : [],
         }
         this.saveToLocalStorage();
         localStorage.removeItem("artists"+this.id);
@@ -70,9 +90,17 @@ class User {
         localStorage.removeItem("active_playlist");
     }
 
-    saveToLocalStorage() {
+    saveToLocalStorage(savePantry = true) {
+        /*if (savePantry) {
+            this.saveToPantry();
+        }*/
         localStorage.setItem("user_"+this.id, JSON.stringify(this.user_));
     }
+
+    /*saveToPantry() {
+        console.log("Saved user to pantry");
+        pantry.call("POST", this.id, null, console.error, "Could not save user to pantry", this.user_);
+    }*/
 
     exportUser() {
         return this.user_;
@@ -104,6 +132,15 @@ class User {
 
     set artists(artists) {
         this.user_.artists = artists;
+        this.saveToLocalStorage();
+    }
+
+    get release_playlists() {
+        return this.user_.release_playlists;
+    }
+
+    set release_playlists(release_playlists) {
+        this.user_.release_playlists = release_playlists;
         this.saveToLocalStorage();
     }
 
@@ -176,6 +213,15 @@ class User {
 
     set active_playlist(active_playlist) {
         this.user_.active_playlist = active_playlist;
+        this.saveToLocalStorage();
+    }
+
+    get sort_by() {
+        return this.user_.sort_by;
+    }
+
+    set sort_by(sort_by) {
+        this.user_.sort_by = sort_by;
         this.saveToLocalStorage();
     }
 
