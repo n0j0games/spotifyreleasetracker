@@ -513,6 +513,7 @@ function getAlbum(item, playlist){
         show : true,
         shown_in : playlist,
         songs : [],
+        explicit : false,
         dummy : 0
     }
     for (const y in item.artists) {
@@ -534,16 +535,7 @@ function getAlbum(item, playlist){
     album.release_date = new Date(dateArray[0], dateArray[1]-1, dateArray[2]);
     const intimespan = inTimeSpan(album.release_date);
     const passFilter = matchesFilter(album.title);
-    let duplicate = false;
-    for (const y in results) {
-        const title_ = results[y].album.title;
-        const artist_ = results[y].album.artist;
-        if (album.title === title_ && album.artist === artist_) {
-            duplicate = true;
-            break;
-        }
-    }
-    if (intimespan && passFilter && !duplicate && !fromVariousArtists) {
+    if (intimespan && passFilter && !fromVariousArtists) {
         return album; 
     }
     return null;
@@ -589,11 +581,16 @@ function getPlaylistSongsCallback(response, name) {
 
 // Callback after loading songs from album, adds songs to results
 function getSongsCallback(response, album) {
+    console.log(JSON.parse(response));
     const data = JSON.parse(response);
     const album_id = data.href.split("/")[5];
     const items = data.items;
     let songs = [];
+    let explicit = false;
     for (let x in items) {
+        if (items[x].explicit) {
+            explicit = true;
+        }
         let artists = [];
         for (let y in items[x].artists) {
             artists.push(items[x].artists[y].name);
@@ -604,6 +601,7 @@ function getSongsCallback(response, album) {
     }
     album.songs = songs;
     album.tracks = songs.length;
+    album.explicit = explicit;
 
     if (album.tracks === 1) {
         let artists_ = album.songs[0].artists;
@@ -621,8 +619,25 @@ function getSongsCallback(response, album) {
         }
     }
 
-    results.push({album});
-    results = sortResults(results);
+    let duplicate = false;
+    let duplicate_explicit = false;
+    for (const y in results) {
+        const title_ = results[y].album.title;
+        const artist_ = results[y].album.artist;
+        if (album.title === title_ && album.artist === artist_) {
+            console.log("Duplicate found", album, results[y].album)
+            duplicate = true;
+            duplicate_explicit = results[y].album.explicit;
+            if (!duplicate_explicit && album.explicit) {
+                results.splice(y, 1);
+            }
+            break;
+        }
+    }
+    if (!duplicate || (duplicate && !duplicate_explicit && album.explicit)) {
+        results.push({album});
+        results = sortResults(results);
+    }
     filterAlbums();
 }
 

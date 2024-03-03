@@ -301,7 +301,17 @@ i {
 }
 
 .releaseType, .releaseDate, .releaseUnreleased, .releasePlaylist {
-    margin: 0 10px 0 0;
+    padding: 5px;
+    background-color: var(--highlight);
+    border-radius: 5px;
+}
+
+.releaseType, .releaseUnreleased, .releasePlaylist {
+    margin: 5px 10px 5px 0px;
+}
+
+.releaseDate {
+    margin: 5px 0px 5px 0px;
 }
 
 .releaseUnreleased {
@@ -372,13 +382,17 @@ i {
 }
 
 .saveSongButtonPre {
-    color: white;
-    border: 1px solid var(--lowlight);
+    color: var(--lowlight);
+    /*border: 1px solid var(--lowlight);*/
+    background-color: var(--highlight);
+    border: none;
 }
 
 .saveSongButtonAfter {
     color: var(--green);
-    border: 1px solid var(--green1);
+    /*border: 1px solid var(--green1);*/
+    border: none;
+    background-color: var(--green1);
 }
 
 .saveSongButton i {
