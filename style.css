@@ -288,6 +288,8 @@ i {
     margin: 10px;
     flex-grow: 2;
     min-width: 30%;
+    flex-wrap: wrap;
+    gap: 0 7px;
 }
 
 .releaseArtist, .lowerContent {
@@ -301,11 +303,14 @@ i {
 }
 
 .releaseType, .releaseDate, .releaseUnreleased, .releasePlaylist {
+    display: flex;
+    gap: 3px;
     padding: 5px;
-    background-color: var(--highlight);
-    border-radius: 5px;
+    flex-wrap: nowrap;
+    
 }
 
+/*
 .releaseType, .releaseUnreleased, .releasePlaylist {
     margin: 5px 10px 5px 0px;
 }
@@ -313,6 +318,7 @@ i {
 .releaseDate {
     margin: 5px 0px 5px 0px;
 }
+*/
 
 .releaseUnreleased {
     color: var(--sand);
@@ -675,16 +681,21 @@ hr {
 }
 
 /*
-    Mobile
- */
-@media only screen and (max-width: 700px) {
+    Tablet
+*/
+@media only screen and (max-width: 850px) {
 
+    /* General Mobile & Tablet */
     #authorize {
         justify-content: flex-start;
         text-align: center;
-
     }
 
+    #app {
+        margin: 0;
+    }
+
+    /* Mobile Buttons */
     .inactiveBtn:hover {
         background: transparent;
         color: white;
@@ -697,6 +708,7 @@ hr {
         border: 1px solid var(--green);
     }
 
+    /* Main Title & Login Info */
     #mainTitleDiv {
         position: relative;
         top: 0;
@@ -714,6 +726,77 @@ hr {
         justify-content: center;
     }
 
+    #title {
+        margin-top: 30px;
+    }
+
+    .filter button {
+        height: 50px;
+    }
+
+    /* Releases */
+    #releases {
+        margin: 30px;
+    }
+
+    .blur {
+        width: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-grow: 2;
+    }
+
+    .singleRelease {
+        width: 100%;
+        min-width: 0;
+        margin: 5px 0;
+        height: auto;
+        position: relative;
+        display: flex;
+    }
+
+    .rightcontent, .releaseArtist, .releaseName, .lowerContent {
+        flex-wrap: wrap;
+        margin: 0;
+    }
+
+    .rightContent {
+        padding: 2px 10px;
+    }
+
+    .lowerContent {
+        justify-content: flex-start;
+        padding: 0 0 10px 2px;
+        flex-grow: 2;
+    }
+
+    /* Auth page stuff */
+    #description {
+        text-align: center;
+    }
+
+    #footer {
+        position: relative;
+        margin: 0;
+    }
+    
+    #previewDiv img {
+        max-width: 320px;
+        width: calc(100vw - 40px);
+        height: auto;
+        margin: 10px 0;
+    }
+
+    .artistDiv button, .playlistDiv button {
+        width: 30px;
+    }
+}
+
+/*
+    Mobile
+ */
+@media only screen and (max-width: 600px) {
+    /* Popups */
     .divPopup, #albumPopup, #settingsPopup {
         background-color: var(--release);
     }
@@ -733,21 +816,10 @@ hr {
         margin: 15px;
     }
 
-    #title {
-        margin-top: 30px;
-    }
-
-    #app {
-        margin: 0;
-    }
-
+    /* Releases */
     #releases {
         width: 100vw;
         margin: 30px 0 0 0;
-    }
-
-    .filter button {
-        height: 50px;
     }
 
     .singleRelease {
@@ -788,37 +860,7 @@ hr {
         color: white;
     }
 
-    .rightcontent, .releaseArtist, .releaseName, .lowerContent {
-        flex-wrap: wrap;
-        margin: 0;
-    }
-
-    .rightContent, .lowerContent {
-        padding: 2px 10px;
-    }
-
-    .lowerContent {
-        justify-content: flex-start;
-        padding-bottom: 10px;
-        flex-grow: 2;
-    }
-
-    #description {
-        text-align: center;
-    }
-
-    #footer {
-        position: relative;
-        margin: 0;
-    }
-    
-    #previewDiv img {
-        max-width: 320px;
-        width: calc(100vw - 40px);
-        height: auto;
-        margin: 10px 0;
-    }
-
+    /* Songs */
     .song {
         display: none;
     }
@@ -827,9 +869,6 @@ hr {
         display: none;
     }
 
-    .artistDiv button, .playlistDiv button {
-        width: 30px;
-    }
 }
 
 /*

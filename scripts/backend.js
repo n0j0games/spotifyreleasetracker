@@ -441,8 +441,9 @@ function removePlaylist(nr) {
     ALBUM SECTION
 */
 
-let results = []
-let total_ = 0
+let results = [];
+let total_ = 0;
+let song_total_ = 0;
 
 // Refresh Albums, called after artists window closed and after first artist load
 function refreshAlbums() {
@@ -453,6 +454,8 @@ function refreshAlbums() {
     }
     
     total_ = 0
+    song_total_ = 0;
+
     let active_artists = [];
     for (let x in artists) {
         if (artists[x].active) {
@@ -482,6 +485,7 @@ function albumCallback(response) {
         const item = items[x];
         let album = getAlbum(item, "");        
         if (album !== null) {
+            song_total_++;
             api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function(response_) {
                 getSongsCallback(response_, album);
             }, logger.error, "Could not save songs");
@@ -569,6 +573,7 @@ function getPlaylistSongsCallback(response, name) {
         let album = getAlbum(item, name);
         if (album !== null) {
             found = true;
+            song_total_++;
             api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function (response) {
                 getSongsCallback(response, album);
             }, logger.error, "Could not save songs");  
@@ -581,7 +586,6 @@ function getPlaylistSongsCallback(response, name) {
 
 // Callback after loading songs from album, adds songs to results
 function getSongsCallback(response, album) {
-    console.log(JSON.parse(response));
     const data = JSON.parse(response);
     const album_id = data.href.split("/")[5];
     const items = data.items;
@@ -625,7 +629,6 @@ function getSongsCallback(response, album) {
         const title_ = results[y].album.title;
         const artist_ = results[y].album.artist;
         if (album.title === title_ && album.artist === artist_) {
-            console.log("Duplicate found", album, results[y].album)
             duplicate = true;
             duplicate_explicit = results[y].album.explicit;
             if (!duplicate_explicit && album.explicit) {
@@ -638,6 +641,7 @@ function getSongsCallback(response, album) {
         results.push({album});
         results = sortResults(results);
     }
+    song_total_--;
     filterAlbums();
 }
 
@@ -720,9 +724,12 @@ function toggleFilters(album, single, feature) {
 
 /* filters each album and sends them back to main, also removes duplicates */
 function filterAlbums() {
+    console.log(song_total_);
+    if (song_total_ !== 0) {
+        return;
+    }
     removeDuplicates(results);
     
-    console.warn(results);
     for (let x in results) {
         if (filters.feature && results[x].album.isfeature) {
             results[x].album.show = false;
