@@ -1,0 +1,13 @@
+<div id="mainTitleDiv">
+  <p id="mainTitle">releasr</p>
+  <p id="mainTitleFor">for</p>
+  <img id="spotifyLogo" src="assets/spotify.png" alt="">
+</div>
+<div id="loginInfo">
+  <img id="loginImg" src="assets/profilepic.png" alt="">
+  <p id="loginUser">Not logged in</p>
+  <button id="settingsBtn" onclick="enableSettingsDiv(true)"><i class="fa-solid fa-gear"></i></button>
+  <button id="logoutBtn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+</div>
+
+<app-settings *ngIf="false"></app-settings>

@@ -1,0 +1,82 @@
+<section id="settingsPopup">
+  <ul id="settingsFG">
+    <li class="manageDiv">
+      <button onclick="enableSettingsDiv(false)" id="settingsClose"><i class="fa-solid fa-xmark"></i></button>
+      <p class="settingsTitleText"><i class="fa-solid fa-gear"></i> Settings</p>
+    </li>
+    <hr>
+    <li class="manageDiv">
+      <p>Show releases within</p>
+      <input id="daysInput" type="number" min="1" max="90" maxlength="2" placeholder="30">
+      <p>days</p>
+    </li>
+    <li class="manageDiv">
+      <p>Marketplace</p>
+      <input id="marketplaceInput" type="text" maxlength="2" placeholder="DE">
+    </li>
+    <li class="manageDiv">
+      <p>Filter out "sped up", "slowed down", etc.</p>
+      <input id="advancedfilterInput" type="checkbox">
+    </li>
+    <li class="manageDiv">
+      <p>Only save first song from singles with multiple tracks</p>
+      <input id="savedoublesInput" type="checkbox">
+    </li>
+    <li class="manageDiv">
+      <p>Add songs to</p>
+      <select id="playlistSelect" name="playlists" id="playlists">
+        <option value="none">None</option>
+        <option value="your_library">Your Library</option>
+      </select>
+    </li>
+    <li class="manageDiv">
+      <p>Sort by</p>
+      <select id="sortSelect" name="sort" id="sort">
+        <option value="alphabetical">Alpabetical</option>
+        <option value="release_date">Release Date</option>
+        <option value="playlist">Playlist</option>
+      </select>
+    </li>
+    <li class="manageDiv">
+      <button onclick="saveSettings()" id="saveSettings">Save settings</button>
+    </li>
+    <hr>
+    <li class="manageDiv">
+      <p class="settingsTitleText"><i class="fa-solid fa-file-export"></i> Manage Your Data</p>
+    </li>
+    <li class="manageDiv">
+      <p class="settingsInfoText">You can delete, backup or import your data here. For import simply paste the data as text in the input field below.</p>
+    </li>
+    <li class="manageDiv">
+      <button onclick="deleteData()" id="artistReset">Delete data</button>
+      <button onclick="exportData()" id="artistExport">Export to clipboard</button>
+
+    </li>
+    <li class="manageDiv">
+      <input id="importArtistsInput" type="text" placeholder="Paste here">
+      <button onclick="importData()" id="artistsImport">Import Data</button>
+    </li>
+    <hr>
+    <li class="manageDiv">
+      <p class="settingsTitleText"><i class="fa-solid fa-newspaper"></i> What's New?</p>
+    </li>
+    <li class="manageDiv">
+      <p class="settingsInfoText"><a>Version 1.4.0:</a> Added Release-Playlist feature and sorting settings</p>
+    </li>
+    <li class="manageDiv">
+      <p class="settingsInfoText"><a>Version 1.3.2:</a> Improved artist search</p>
+    </li>
+    <hr>
+    <li class="manageDiv">
+      <p class="settingsTitleText"><i class="fa-solid fa-bug"></i> Bug Report</p>
+    </li>
+    <li class="manageDiv">
+      <p class="settingsInfoText">If you found a bug please open a <a id="greenLink" target="_blank" href="https://github.com/n0j0games/spotifyreleasetracker/issues"> GitHub Issue</a></p>
+    </li>
+    <hr>
+    <li class="manageDiv">
+      <p class="settingsInfoText">We are not related to Spotify AB or any of it´s partners in any way.<br>
+        <a id="greenLink" href="https://noahschuette.github.io" target="_blank"> Made with <i class="fa-solid fa-heart"></i> by Noah</a></p>
+    </li>
+  </ul>
+</section>

@@ -39,7 +39,7 @@ class SpotifyAPI {
     }
 
     /* Calls the API */
-    call(method, url, param, true_callback, error_callback, error_message, body = null, call_count=0) {      
+    call(method, url, param, true_callback, error_callback, error_message, body = null, call_count=0) {
       let self = this;
       let xhr = new XMLHttpRequest();      
       let url_ = urls[url];
@@ -67,10 +67,10 @@ class SpotifyAPI {
           if (call_count > 10) {
             error_callback(this.status, "Timed out. Refresh the page or try again later!");
           } else {
-            console.log("Too many requests, waiting 1s")
+            console.log("Too many requests, waiting 5s")
             setTimeout(function() {
               self.call(method, url, param, true_callback, error_callback, error_message, body, call_count+1);
-            }, 1000);
+            }, 5000);
           }          
         } else {
           error_callback(this.status, `${error_message}; Error may caused by Spotify API: ${this.responseText}` );
