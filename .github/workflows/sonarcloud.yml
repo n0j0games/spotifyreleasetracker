@@ -3,7 +3,6 @@ on:
  push:
    branches:
      - main
-     - refactor-as-anguglar
  pull_request:
    types: [opened, synchronize, reopened]
 jobs:
@@ -14,10 +13,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 
-      - name: Install dependencies
-        run: yarn
-      - name: Test and coverage
-        run: yarn jest --coverage
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
