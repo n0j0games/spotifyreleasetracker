@@ -3,6 +3,7 @@ on:
  push:
    branches:
      - main
+     - refactor-as-anguglar
  pull_request:
    types: [opened, synchronize, reopened]
 jobs:
