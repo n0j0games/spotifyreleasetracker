@@ -3,7 +3,7 @@
  * @class
 **/
 
-import keys from "../apikey.js";
+import keys from "../../apikey.js";
 import backend from "./backend.js";
 
 // Stores HTML elements

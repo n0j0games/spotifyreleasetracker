@@ -1,0 +1,969 @@
+:root {
+    --background: #121212;
+    --brown: #5f201e;
+    --sand: #e5cc7f;
+    --green: #1ED760;
+    --lowlight: #B3B3B3;
+    --highlight: #2A2A2A;
+    --red: #E43B44;
+    --mobileWrap: 700px;
+    --footer: #777;
+    --green1: #265C42;
+    --green2: #193C3E;
+    --release: #181818;
+}
+
+html {
+    overflow-y: scroll;
+}
+
+body {
+    background-color: var(--background);
+    color: #fff;
+    font-family: 'Chakra Petch', sans-serif;
+    overflow-x: hidden;
+    margin: 0;
+}
+
+button {
+    font-family: 'Chakra Petch', sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+}
+
+p {
+    margin: 0;
+}
+
+#loginInfo {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--background);
+    border: 1px solid var(--highlight);
+}
+
+#loginImg {
+    width: 20px;
+    height: 20px;
+    border-radius: 50px;
+    margin: 5px;
+}
+
+#loginUser {
+    font-weight: 300;
+    display: inline-block;
+    margin: 5px;
+}
+
+#logoutBtn, #settingsBtn {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    color: white;
+    text-decoration: underline;
+    margin: 3px;
+    padding: 0;
+    border-radius: 5px;
+    display: none;
+}
+
+#settingsBtn:hover {
+    color:var(--green);
+}
+
+#logoutBtn:hover {
+    color:var(--red);
+}
+
+#loginUserHighlight {
+    font-weight: 500;
+    display: inline-block;
+}
+
+#authorize {
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0;
+}
+
+#previewDiv {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+#previewDiv img {
+    height: 500px;
+    margin: 10px;
+    border-radius: 15px;
+}
+
+#welcomeTitle {
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--green);
+    margin: 50px 20px 20px 20px;
+    /*text-shadow: 0 3px 0 var(--green2), 0 6px 0 var(--brown);*/
+}
+
+#mainTitleDiv {
+    z-index: 1;
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    font-weight: 700;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 20px;
+    color: var(--green);
+}
+
+#spotifyLogo {
+    width: 120px;
+    margin-top: 9px;
+}
+
+#mainTitle {
+    text-shadow: 0 3px 0 var(--green1), 0 6px 0 var(--brown);
+}
+
+#mainTitleFor {
+    margin: 9px 7px 0 7px;
+    font-size: 16px;
+}
+
+#description {
+    font-weight: 300;
+    font-size: 16px;
+    color: var(--lowlight);
+    margin: 0 20px;
+}
+
+#authbutton {
+    margin: 50px;
+    border-radius: 25px;
+    padding: 9px 20px;
+    outline: none;
+    border: 1px solid var(--green);
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--background);
+    background-color: var(--green);
+}
+
+#authbutton:hover {
+    color: var(--green);
+    background-color: var(--background);
+}
+
+#releases {
+    margin: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.singleRelease {
+    /* blur background */
+    /*background-image: url("https://m.media-amazon.com/images/I/71889eHAo6L._SS500_.jpg");*/
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: var(--release);
+
+    min-width: var(--mobileWrap);
+    max-width: 1000px;
+    width: 100%;
+    height: auto;
+    margin: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.songUpper {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.blur {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.songUpper:hover {
+    background-color: var(--highlight);
+}
+
+.songLower {
+    width: 100%;
+    display: none;
+}
+
+
+tbody {
+}
+
+.songLower hr {
+    margin: 1px;
+}
+
+.song {
+    text-align: left;
+    width: 100%;
+    padding: 5px 0px;
+    font-size: 14px;
+}
+
+.songTitle {
+    margin: 0 2px 0 10px !important;
+    color: white;
+}
+
+.songNumber {
+    padding: 0 0 0 10px !important;
+}
+
+th, td {
+    border: none;
+}
+
+th {
+    padding: 5px 0;
+    margin: 0 2px;
+    color: var(--lowlight);
+    font-weight: 300;
+}
+
+.evenSong {
+    background-color: var(--highlight);
+}
+
+.singleRelease img {
+    width: 60px;
+    height: 60px;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+i {
+    padding: 3px;
+}
+
+.rightContent {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    flex-grow: 3;
+}
+
+.lowerContent {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 10px;
+    flex-grow: 2;
+    min-width: 30%;
+    flex-wrap: wrap;
+    gap: 0 7px;
+}
+
+.releaseArtist, .lowerContent {
+    color: var(--lowlight);
+    font-weight: 300;
+    font-size: 14px;
+}
+
+.releaseArtist {
+    margin: 3px 5px 10px 5px;
+}
+
+.releaseType, .releaseDate, .releaseUnreleased, .releasePlaylist {
+    display: flex;
+    gap: 3px;
+    padding: 5px;
+    flex-wrap: nowrap;
+    
+}
+
+/*
+.releaseType, .releaseUnreleased, .releasePlaylist {
+    margin: 5px 10px 5px 0px;
+}
+
+.releaseDate {
+    margin: 5px 0px 5px 0px;
+}
+*/
+
+.releaseUnreleased {
+    color: var(--sand);
+}
+
+.blur:hover .releaseName {
+    color: var(--green);
+}
+
+.releaseName {
+    color: white;
+    font-weight: 500;
+    font-size: 16px;
+    margin: 10px 5px 3px 5px;
+}
+
+#title {
+    color: var(--green);
+    font-size: 24px;
+    font-weight: 700;
+    width: calc(100% - 40px);
+    text-align: center;
+    padding: 20px;
+    margin-top: 10px;
+    letter-spacing: 1px;
+}
+
+#search_query_info {
+    color: var(--lowlight);
+    font-size: 14px;
+    font-weight: 300;
+    margin: 0 20px;
+    text-align: center;
+    padding: 10px;
+    letter-spacing: 1px;
+}
+
+.filter {
+    width: calc(100% - 20px);
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter button, .saveSongButton {
+    margin: 5px;
+    border-radius: 5px;
+    padding: 7px 14px;
+    outline: none;
+    font-weight: 700;
+}
+
+.saveSongButton {
+    height: 30px;
+    width: 32px;
+    font-size: 15px;
+    text-align: center;
+    z-index: 1;
+    background: var(--release);  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 10px 10px 10px 0;
+}
+
+.saveSongButtonPre {
+    color: var(--lowlight);
+    /*border: 1px solid var(--lowlight);*/
+    background-color: var(--highlight);
+    border: none;
+}
+
+.saveSongButtonAfter {
+    color: var(--green);
+    /*border: 1px solid var(--green1);*/
+    border: none;
+    background-color: var(--green1);
+}
+
+.saveSongButton i {
+    text-align: center;
+    width: 100%;
+    height: auto;
+    padding: 0;
+    margin: 5px;
+}
+
+.inactiveBtn {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+}
+
+.activeBtn  {
+    background: transparent;
+    color: var(--green);
+    border: 1px solid var(--green);
+}
+
+.inactiveBtn:hover, .activeBtn:hover, .saveSongButtonPre:hover {
+    background: var(--green);
+    color: black;
+    border: 1px solid var(--green);
+    cursor: pointer;
+}
+
+.artistRemove:hover {
+    background-color: var(--red) !important;
+    border: 1px solid var(--red) !important;
+}
+
+/*
+.activeBtn:hover {
+    background: black;
+    color: var(--green);
+    border: 1px solid var(--green);
+}*/
+
+#noartists, #emptyfilter {
+    display: none;
+}
+
+#footer {
+    position: relative;
+    bottom: 0;
+    color: var(--footer);
+    font-size: 14px;
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+    background-color: var(--background);
+}
+
+hr {
+    background-color: var(--highlight);
+    color: var(--highlight);
+    border: solid 1px var(--highlight);
+}
+
+.divPopup, #albumPopup, #settingsPopup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    backdrop-filter: blur(4px);
+    display: none;
+    /*display: flex;*/
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.divFG, #settingsFG {
+    padding: 10px;
+    background-color: var(--release);
+    display: block;
+    height: 80%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-width: 350px;
+    border: 1px solid var(--highlight);
+}
+
+.artistDiv, .playlistDiv {
+    width: calc(100% - 20px);
+    padding: 5px 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.artistDiv:hover, .playlistDiv:hover {
+    background-color: var(--highlight);
+}
+
+.artistDiv img {
+    width: 30px;
+    height: 30px;
+    border-radius: 25px;
+    margin: 5px;
+}
+
+.playlistDiv img {
+    width: 45px;
+    height: 45px;
+    margin: 5px;
+}
+
+.artistTitle, .playlistTitleDiv {
+    margin: 5px;
+    flex-grow: 2;
+}
+
+.playlistOwner {
+    font-weight: 300;
+    color: var(--lowlight);
+}
+
+.artistSpotify {
+    margin: 0 10px 0 0;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--lowlight);
+}
+
+#artistReset:hover {
+    color: white !important;
+    background-color: var(--red) !important;
+    border: 1px solid var(--red) !important;
+}
+
+.manageDiv button, .manageDiv select, .artistDiv button, .playlistDiv button, .manageDiv input, .divClose, #settingsClose {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 14px;
+    background-color: transparent;
+    color: var(--lowlight);
+    outline: none;
+    border: 1px solid var(--lowlight);
+    padding: 3px 5px;
+    border-radius: 2px;
+    margin: 5px;
+    height: 30px;
+}
+
+.manageDiv button {
+    text-transform: capitalize;
+}
+
+.manageDiv {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#noartistssearch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#noartistssearch p {
+    text-align: center;
+    color: var(--lowlight);
+    max-width: 350px;
+}
+
+#noartistssearch img {
+    width: 300px;
+}
+
+#noartistssearch span {
+    color: white;
+}
+
+#searchSection {
+    text-align: center;
+    color: var(--lowlight);
+    margin: 5px 0;
+}
+
+#greenLink {
+    color: var(--green);
+}
+
+#greenLink:hover {
+    color: white;
+}
+
+.manageDiv select {
+    width: 150px;
+}
+.manageDiv option {
+    background-color: var(--highlight);
+}
+
+.divAddInput {
+    flex-grow: 2;
+    padding: 0;
+    margin: 5px 15px;
+}
+
+#importArtistsInput {
+    width: 90px;
+    padding: 0;
+}
+
+#daysInput, #marketplaceInput {
+    padding: 0;
+    width: 40px;
+}
+
+
+#settingsPopup button:hover, .divPopup button:hover {
+    color: black;
+    background-color: var(--green);
+    border: 1px solid var(--green);
+}
+
+.settingsTitleText {
+    color: white;
+    background-color: var(--highlight);
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 3px;
+}
+
+.settingsInfoText {
+    max-width: 350px;
+    color: var(--lowlight);
+    margin: 5px;
+    text-align: center;
+}
+
+#error {
+    position: fixed;
+    margin: 10px;
+    top: 0;
+    left: 0;
+    width: calc(100vw - 50px);
+    padding: 10px;
+    border-radius: 10px;
+    background-color: var(--red);
+    backdrop-filter: blur(5px);
+    display: none;
+    /*display: flex;*/
+    z-index: 100;
+    align-items: center;
+}
+
+#error i {
+    font-size: 20px;
+}
+
+#error i:hover {
+    color: #000;
+}
+
+#errorSub {
+    flex-direction: column;
+    justify-content: flex-start;
+    flex-grow: 2;
+}
+
+#errorTitle {
+    font-weight: 700;
+}
+
+#errorSubtitle {
+    font-weight: 300;
+}
+
+/*
+    Tablet
+*/
+@media only screen and (max-width: 850px) {
+
+    /* General Mobile & Tablet */
+    #authorize {
+        justify-content: flex-start;
+        text-align: center;
+    }
+
+    #app {
+        margin: 0;
+    }
+
+    /* Mobile Buttons */
+    .inactiveBtn:hover {
+        background: transparent;
+        color: white;
+        border: 1px solid white;
+    }
+
+    .activeBtn:hover  {
+        background: transparent;
+        color: var(--green);
+        border: 1px solid var(--green);
+    }
+
+    /* Main Title & Login Info */
+    #mainTitleDiv {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin: 15px;
+        text-align: center;
+    }
+
+    #loginInfo {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin: 30px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #title {
+        margin-top: 30px;
+    }
+
+    .filter button {
+        height: 50px;
+    }
+
+    /* Releases */
+    #releases {
+        margin: 30px;
+    }
+
+    .blur {
+        width: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-grow: 2;
+    }
+
+    .singleRelease {
+        width: 100%;
+        min-width: 0;
+        margin: 5px 0;
+        height: auto;
+        position: relative;
+        display: flex;
+    }
+
+    .rightcontent, .releaseArtist, .releaseName, .lowerContent {
+        flex-wrap: wrap;
+        margin: 0;
+    }
+
+    .rightContent {
+        padding: 2px 10px;
+    }
+
+    .lowerContent {
+        justify-content: flex-start;
+        padding: 0 0 10px 2px;
+        flex-grow: 2;
+    }
+
+    /* Auth page stuff */
+    #description {
+        text-align: center;
+    }
+
+    #footer {
+        position: relative;
+        margin: 0;
+    }
+    
+    #previewDiv img {
+        max-width: 320px;
+        width: calc(100vw - 40px);
+        height: auto;
+        margin: 10px 0;
+    }
+
+    .artistDiv button, .playlistDiv button {
+        width: 30px;
+    }
+}
+
+/*
+    Mobile
+ */
+@media only screen and (max-width: 600px) {
+    /* Popups */
+    .divPopup, #albumPopup, #settingsPopup {
+        background-color: var(--release);
+    }
+
+    .divFG, #settingsFG {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        max-height: 100%;
+        min-width: 0;
+        border: none;
+        margin: 15px;
+        padding: 0 0 100px 0;
+    }
+
+    .divClose, #settingsClose {
+        margin: 15px;
+    }
+
+    /* Releases */
+    #releases {
+        width: 100vw;
+        margin: 30px 0 0 0;
+    }
+
+    .singleRelease {
+        margin: 5px 0;
+        width: 100vw;
+        height: auto;
+        background-color: transparent;
+        background-image: none !important;
+        min-width: 0;
+        position: relative;
+        display: flex;
+    }
+
+    .blur {
+        flex-grow: 2;
+        width: auto;
+        margin: 0 90px 0 0;
+        display: block;
+    }
+
+    .saveSongButton {
+        position:absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        margin: 0;
+        padding: 20px;
+        margin: 0 15px 0 0;
+        width: 70px;
+        font-size: 20px;
+        border: none;
+        border-radius: 0px;
+        background-color: var(--highlight);
+    }
+
+    .saveSongButtonAfter {
+        background-color: var(--green1);
+        color: white;
+    }
+
+    /* Songs */
+    .song {
+        display: none;
+    }
+
+    .songLower hr {
+        display: none;
+    }
+
+}
+
+/*
+    Scrollbar
+ */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+
+::-webkit-scrollbar-track {
+    background: linear-gradient(0deg, var(--highlight), #db0000);
+    background: var(--highlight);
+    background-size: 400% 100%;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--lowlight);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--green);
+}
+
+/* Loader */
+
+#spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lds-ellipsis {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.lds-ellipsis div {
+    position: absolute;
+    top: 33px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--green);
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.lds-ellipsis div:nth-child(1) {
+    left: 8px;
+    animation: lds-ellipsis1 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(2) {
+    left: 8px;
+    animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(3) {
+    left: 32px;
+    animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(4) {
+    left: 56px;
+    animation: lds-ellipsis3 0.6s infinite;
+}
+
+@keyframes lds-ellipsis1 {
+    0% {
+        transform: scale(0);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes lds-ellipsis3 {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0);
+    }
+}
+
+@keyframes lds-ellipsis2 {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(24px, 0);
+    }
+}
+
+  

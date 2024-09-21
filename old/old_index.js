@@ -1,4 +1,4 @@
-import keys from "./apikey.js";
+import keys from "../apikey.js";
 
 let redirect_uri = keys.uri;
 //let redirect_uri = "https://releasr.netlify.app/"

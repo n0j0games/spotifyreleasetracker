@@ -5,7 +5,7 @@
 
 import SpotifyAPI from "./api.js";
 //import PantryAPI from "./pantry.js"; 
-import keys from "../apikey.js";
+import keys from "../../apikey.js";
 import User from "./user.js";
 import logger from "./logger.js";
 import targetProxy from "./main.js";
@@ -470,7 +470,6 @@ function refreshAlbums() {
     
     // !: Hotfix to supress content-caching, adds unused date tag to url
     const date = new Date().getDate();
-    console.log(date);
 
     for (let x in active_artists) {
         const param = `${active_artists[x].id}/albums?limit=50&include_groups=album,single&date=${date}`;
@@ -724,7 +723,6 @@ function toggleFilters(album, single, feature) {
 
 /* filters each album and sends them back to main, also removes duplicates */
 function filterAlbums() {
-    console.log(song_total_);
     if (song_total_ !== 0) {
         return;
     }
