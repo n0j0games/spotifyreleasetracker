@@ -590,11 +590,11 @@ hr {
     margin: 5px 0;
 }
 
-#greenLink {
+.greenLink {
     color: var(--green);
 }
 
-#greenLink:hover {
+.greenLink:hover {
     color: white;
 }
 

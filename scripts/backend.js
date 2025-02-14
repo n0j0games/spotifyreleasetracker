@@ -4,15 +4,13 @@
 **/
 
 import SpotifyAPI from "./api.js";
-//import PantryAPI from "./pantry.js"; 
 import keys from "../apikey.js";
 import User from "./user.js";
 import logger from "./logger.js";
 import targetProxy from "./main.js";
 
 const location_ = window.location.href.split("?")[0];
-const api = new SpotifyAPI(keys.id, keys.secret, location_, window.showError);
-//const pantry = new PantryAPI(window.showError);
+const api = new SpotifyAPI(keys.id, location_);
 let user = null;
 let artists = [];
 let current_playlist = null;
@@ -30,7 +28,7 @@ let filters = {
 const requiredversion = 130;
 function auth() {
     localStorage.setItem("releasr_auth_version", requiredversion);
-    api.requestAuthorization( function(url) {window.location.href = url;} );
+    api.requestAuthorization();
 }
 
 // Handles redirect from spotify login page
@@ -40,10 +38,6 @@ function handleRedirect() {
 
 function getAccessToken() {
     return api.access_token;
-}
-
-function getMarket() {
-    return user.market;
 }
 
 function getTimespan() {
@@ -126,7 +120,6 @@ function loadArtists() {
     if (artists !== null) {
         if (artists.length === 0) {
             getSongsFromPlaylists();
-            return;
         } else {
             artists = sortArtists(artists);
             targetProxy.artists = artists;
@@ -212,7 +205,7 @@ function onArtistFound(response) {
 // Searching for artists via search query
 function searchArtist(searchq) {
     searchq = searchq.trim();
-    if (searchq.length == 0) {
+    if (searchq.length === 0) {
         targetProxy.artists = artists;
         return;
     }
@@ -260,7 +253,7 @@ function searchArtistCallback(response) {
         if (item[i].followers.total < 100) {
             continue;
         }
-        if (item[i]["images"].length == 0) {
+        if (item[i]["images"].length === 0) {
             search.push({ id : item[i]["id"], name : item[i]["name"], image : null, active : false, following : false, added : false});
         } else {
             search.push({ id : item[i]["id"], name : item[i]["name"], image : item[i]["images"][0]["url"], active : false, following : false, added : false});
@@ -357,7 +350,7 @@ function sortArtists(temp) {
 // Search for playlists via search query
 function searchPlaylist(searchq) {
     searchq = searchq.trim();
-    if (searchq.length == 0) {
+    if (searchq.length === 0) {
         targetProxy.playlists = user.release_playlists;
         return;
     }
@@ -371,7 +364,7 @@ function searchPlaylistCallback(response) {
     const item = data.playlists.items;
     let search = [];
     for (let i=0; i<Math.min(10,item.length); i++) {
-        if (item[i]["images"].length == 0) {
+        if (item[i]["images"].length === 0) {
             search.push({ id : item[i]["id"], name : item[i]["name"], image: null, owner: item[i]["owner"]["display_name"], added : false});
         } else {
             search.push({ id : item[i]["id"], name : item[i]["name"], image: item[i]["images"][0]["url"], owner: item[i]["owner"]["display_name"], added : false});
@@ -470,7 +463,6 @@ function refreshAlbums() {
     
     // !: Hotfix to supress content-caching, adds unused date tag to url
     const date = new Date().getDate();
-    console.log(date);
 
     for (let x in active_artists) {
         const param = `${active_artists[x].id}/albums?limit=50&include_groups=album,single&date=${date}`;
@@ -587,7 +579,6 @@ function getPlaylistSongsCallback(response, name) {
 // Callback after loading songs from album, adds songs to results
 function getSongsCallback(response, album) {
     const data = JSON.parse(response);
-    const album_id = data.href.split("/")[5];
     const items = data.items;
     let songs = [];
     let explicit = false;
@@ -724,7 +715,6 @@ function toggleFilters(album, single, feature) {
 
 /* filters each album and sends them back to main, also removes duplicates */
 function filterAlbums() {
-    console.log(song_total_);
     if (song_total_ !== 0) {
         return;
     }
@@ -735,11 +725,7 @@ function filterAlbums() {
             results[x].album.show = false;
         } else if (filters.single && !(results[x].album.type === "single")) {
             results[x].album.show = false;
-        } else if (filters.album && !(results[x].album.type === "album")) {
-            results[x].album.show = false;
-        } else {
-            results[x].album.show = true;
-        }
+        } else results[x].album.show = !(filters.album && !(results[x].album.type === "album"));
     }
     targetProxy.albums = results;
 }
@@ -897,7 +883,7 @@ function saveSongsFromAlbum(response) {
     }
 }
 
-function saveToLibraryCallBack(response) {
+function saveToLibraryCallBack(_) {
     if (temp_album === null) {
         console.error("Album is null in savetolibrarycallback");
         return;
@@ -910,8 +896,6 @@ function saveToLibraryCallBack(response) {
 
 export default {getActiveArtists,
     getTimespan,
-    filterAlbums,
-    getMarket,
     refreshAlbums,
     exportData,
     saveSettings,
@@ -921,7 +905,6 @@ export default {getActiveArtists,
     deleteData,
     importData,
     addArtist,
-    loadArtists,
     auth,
     onLogin,
     handleRedirect,

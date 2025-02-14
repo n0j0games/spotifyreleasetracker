@@ -1,5 +1,9 @@
 # TODO
 
+# Version 1.4.1
+
+- Replace Implicit Grant with PSKE
+
 # Version 1.4
 
 - Added release-playlists

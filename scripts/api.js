@@ -19,14 +19,41 @@ const urls = {
     playlist: 'https://api.spotify.com/v1/playlists/',
 }
 
+
+/*
+    CODE VERIFIER & CHALLENGE
+ */
+
+const generateRandomString = (length) => {
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const values = crypto.getRandomValues(new Uint8Array(length));
+    return values.reduce((acc, x) => acc + possible[x % possible.length], "");
+}
+const codeVerifier  = generateRandomString(64);
+const sha256 = async (plain) => {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(plain)
+    return window.crypto.subtle.digest('SHA-256', data)
+}
+const base64encode = (input) => {
+    return btoa(String.fromCharCode(...new Uint8Array(input)))
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+}
+const hashed = await sha256(codeVerifier)
+const codeChallenge = base64encode(hashed);
+
+/*
+    API
+ */
+
 /* Serves as the base for the Spotify API */
 class SpotifyAPI {
-    constructor(client_id, client_secret, redirect_uri, error_callback) {
+    constructor(client_id, redirect_uri) {
       this.access_token = localStorage.getItem("access_token");
       this.client_id = client_id;
-      this.client_secret = client_secret;
       this.redirect_uri = redirect_uri;
-      this.error_callback = error_callback
       this.show_api_calls = localStorage.getItem("show_api_calls");
     }
 
@@ -58,12 +85,12 @@ class SpotifyAPI {
       xhr.onload = function() {
         if (self.show_api_calls === "true")
           console.log("Called", method, url_, this.status)
-        if (this.status == 200 || this.status == 201) {
+        if (this.status === 200 || this.status === 201) {
           true_callback(this.response);
-        } else if (this.status == 401) {
+        } else if (this.status === 401) {
           console.log(self)
           refreshToken(self);
-        } else if (this.status == 429) {
+        } else if (this.status === 429) {
           if (call_count > 10) {
             error_callback(this.status, "Timed out. Refresh the page or try again later!");
           } else {
@@ -87,11 +114,14 @@ class SpotifyAPI {
     }
 
     fetchAccessToken( code ){
-      let body = "grant_type=authorization_code";
-      body += "&code=" + code;
-      body += "&redirect_uri=" + encodeURI(this.redirect_uri);
-      body += "&client_id=" + this.client_id;
-      body += "&client_secret=" + this.client_secret;
+        const codeVerifier_ = localStorage.getItem('code_verifier');
+        const body = new URLSearchParams({
+            client_id: this.client_id,
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri: encodeURI(this.redirect_uri),
+            code_verifier: codeVerifier_
+        });
       this.callAuthorizationApi(body);
     }
 
@@ -99,7 +129,6 @@ class SpotifyAPI {
       let xhr = new XMLHttpRequest();
       xhr.open("POST", urls.token, true);
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      xhr.setRequestHeader('Authorization', 'Basic ' + btoa(this.client_id + ":" + this.client_secret));
       xhr.send(body);
       xhr.onload = this.handleAuthorizationResponse;
     }
@@ -107,11 +136,11 @@ class SpotifyAPI {
     handleAuthorizationResponse(){
       if ( this.status === 200 ){
           let data = JSON.parse(this.responseText);
-          if ( data.access_token != undefined ){
+          if ( data.access_token !== undefined ){
               this.access_token = data.access_token;
               localStorage.setItem("access_token", data.access_token);
           }
-          if ( data.refresh_token  != undefined ){
+          if ( data.refresh_token  !== undefined ){
               localStorage.setItem("refresh_token", data.refresh_token);
           }
           location.reload();
@@ -125,15 +154,21 @@ class SpotifyAPI {
 
     
     /* Authorize user to app */
-    requestAuthorization(callback) {
-      let url = urls.authorize;
-      url += "?client_id=" + this.client_id;
-      url += "&response_type=code";
-      url += "&redirect_uri=" + encodeURI(this.redirect_uri);
-      url += "&show_dialog=true";
-      url += "&scope=user-follow-read user-read-private playlist-read-private playlist-modify-public playlist-modify-private user-library-modify";
-      //url += "&scope=user-follow-read user-read-private";
-      callback(url);
+    requestAuthorization() {
+        window.localStorage.setItem("code_verifier", codeVerifier);
+        const scope = "user-follow-read user-read-private playlist-read-private playlist-modify-public playlist-modify-private user-library-modify"
+        const params = {
+            response_type: 'code',
+            client_id: this.client_id,
+            scope,
+            code_challenge_method: 'S256',
+            code_challenge: codeChallenge,
+            redirect_uri: encodeURI(this.redirect_uri)
+        }
+
+        const authUrl = new URL(urls.authorize);
+        authUrl.search = new URLSearchParams(params).toString();
+        window.location.href = authUrl.toString();
     }
 
 }
