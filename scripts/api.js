@@ -21,30 +21,6 @@ const urls = {
 
 
 /*
-    CODE VERIFIER & CHALLENGE
- */
-
-const generateRandomString = (length) => {
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const values = crypto.getRandomValues(new Uint8Array(length));
-    return values.reduce((acc, x) => acc + possible[x % possible.length], "");
-}
-const codeVerifier  = generateRandomString(64);
-const sha256 = async (plain) => {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(plain)
-    return window.crypto.subtle.digest('SHA-256', data)
-}
-const base64encode = (input) => {
-    return btoa(String.fromCharCode(...new Uint8Array(input)))
-        .replace(/=/g, '')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_');
-}
-const hashed = await sha256(codeVerifier)
-const codeChallenge = base64encode(hashed);
-
-/*
     API
  */
 
@@ -97,7 +73,7 @@ class SpotifyAPI {
             console.log("Too many requests, waiting 1s")
             setTimeout(function() {
               self.call(method, url, param, true_callback, error_callback, error_message, body, call_count+1);
-            }, 1000);
+            }, 5000);
           }          
         } else {
           error_callback(this.status, `${error_message}; Error may caused by Spotify API: ${this.responseText}` );
@@ -154,7 +130,12 @@ class SpotifyAPI {
 
     
     /* Authorize user to app */
-    requestAuthorization() {
+    async requestAuthorization() {
+
+        const codeVerifier  = generateRandomString(64);
+        const hashed = await sha256(codeVerifier)
+        const codeChallenge = base64encode(hashed);
+
         window.localStorage.setItem("code_verifier", codeVerifier);
         const scope = "user-follow-read user-read-private playlist-read-private playlist-modify-public playlist-modify-private user-library-modify"
         const params = {
@@ -168,9 +149,28 @@ class SpotifyAPI {
 
         const authUrl = new URL(urls.authorize);
         authUrl.search = new URLSearchParams(params).toString();
-        window.location.href = authUrl.toString();
+        return authUrl.toString();
     }
 
+}
+
+async function sha256(plain){
+    const encoder = new TextEncoder()
+    const data = encoder.encode(plain)
+    return window.crypto.subtle.digest('SHA-256', data)
+}
+
+function base64encode(input){
+    return btoa(String.fromCharCode(...new Uint8Array(input)))
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+}
+
+function generateRandomString(length) {
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const values = crypto.getRandomValues(new Uint8Array(length));
+    return values.reduce((acc, x) => acc + possible[x % possible.length], "");
 }
 
 function getCode() {

@@ -28,7 +28,7 @@ let filters = {
 const requiredversion = 130;
 function auth() {
     localStorage.setItem("releasr_auth_version", requiredversion);
-    api.requestAuthorization();
+    api.requestAuthorization().then(url => window.location.href = url);
 }
 
 // Handles redirect from spotify login page
