@@ -5,6 +5,8 @@
 
 import keys from "../apikey.js";
 import logic from "./logic.js";
+import logger from "./logger.js";
+import { ErrorMessages } from "./enums/error-messages.enum.js";
 
 // Stores HTML elements
 const html = {
@@ -60,7 +62,7 @@ window.onPageLoad = function () {
     }
     const locations = [keys.uri, keys.uri + "/", keys.uri + "/index.html"]
     if (!(locations.includes(location))) {
-        console.error("wrong uri", locations, location);
+        logger.error(ErrorMessages.ILLEGAL_URI, "Entered URL: " + location);
         return;
     }
 

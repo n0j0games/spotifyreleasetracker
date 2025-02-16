@@ -8,9 +8,12 @@ import keys from "../apikey.js";
 import User from "./user.js";
 import logger from "./logger.js";
 import targetProxy from "./main.js";
+import { Method } from "./enums/method.enum.js";
+import { SpotifyUrls } from "./enums/spotify-urls.enum.js";
+import { ErrorMessages } from "./enums/error-messages.enum.js";
 
 const location_ = window.location.href.split("?")[0];
-const api = new SpotifyAPI(keys.id, location_);
+const api = new SpotifyAPI(keys.id, location_, logger.error);
 let user = null;
 let artists = [];
 let current_playlist = null;
@@ -69,7 +72,7 @@ function login(onLogin) {
         return;
     }
 
-    api.call("GET", "user_profile", null, onLogin, logger.error, "Could not load user profile") //Calls Step 2
+    api.call(Method.GET, SpotifyUrls.USER, null, onLogin, logger.error, ErrorMessages.COULD_NOT_LOAD_USER) //Calls Step 2
 
     /*api.call("GET", "user_profile", null, function(response) {
         temp_data = JSON.parse(response);
@@ -85,7 +88,7 @@ function onLogin(response) {
     }*/
     user = new User(JSON.parse(response), null);
 
-    api.call("GET", "playlists", null, playlistCallback, logger.error, "Could not load your profile") //Calls Step 3
+    api.call(Method.GET, SpotifyUrls.USER_PLAYLISTS, null, playlistCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_USER) //Calls Step 3
 
     return user.getProfile();
 }
@@ -130,8 +133,8 @@ function loadArtists() {
         }
     } else {
         artists = [];
-        api.call("GET", "followed_artists", null, artistCallback,
-            logger.error, "Could not load artists");
+        api.call(Method.GET, SpotifyUrls.USER_FOLLOWING, null, artistCallback,
+            logger.error, ErrorMessages.COULD_NOT_LOAD_ARTISTS);
     }
 }
 
@@ -160,8 +163,8 @@ function artistCallback(response) {
                 total = items.length;
             }
             if (limit < total) {
-                api.call("GET",
-                    "followed_artists",
+                api.call(Method.GET,
+                    SpotifyUrls.USER_FOLLOWING,
                     "&after=" + items[items.length - 1].id,
                     artistCallback,
                     logger.error,
@@ -199,7 +202,7 @@ function artistCallback(response) {
 
 // Called from frontend, adds artist
 function addArtist(id) {
-    api.call("GET", "artist_profile", id, onArtistFound, logger.error, "Artist not added")
+    api.call(Method.GET, SpotifyUrls.ARTISTS, id, onArtistFound, logger.error, ErrorMessages.ARTIST_NOT_ADDED)
 }
 
 // Callback if artist found by ID
@@ -222,9 +225,9 @@ function searchArtist(searchq) {
     }
     if (searchq.toLowerCase().startsWith("http://") || searchq.toLowerCase().startsWith("https://")) {
         searchq = searchq.split("artist/")[1].split("?")[0];
-        api.call("GET", "artist_profile", searchq, searchSingleArtist, logger.error, "Unknown link");
+        api.call(Method.GET, SpotifyUrls.ARTISTS, searchq, searchSingleArtist, logger.error, ErrorMessages.UNKNOWN_LINK);
     } else {
-        api.call("GET", "search_artist", searchq, searchArtistCallback, searchSingleArtistError, null);
+        api.call(Method.GET, SpotifyUrls.SEARCH_ARTIST, searchq, searchArtistCallback, searchSingleArtistError, null);
     }
 }
 
@@ -342,7 +345,7 @@ function syncArtists() {
     }
     artists = temp;
     total = 0;
-    api.call("GET", "followed_artists", null, artistCallback,
+    api.call(Method.GET, SpotifyUrls.USER_FOLLOWING, null, artistCallback,
         logger.error, "Could not load artists");
 }
 
@@ -379,7 +382,7 @@ function searchPlaylist(searchq) {
         targetProxy.playlists = user.release_playlists;
         return;
     }
-    api.call("GET", "search_playlist", searchq, searchPlaylistCallback, logger.error, "Error while loading playlists");
+    api.call(Method.GET, SpotifyUrls.SEARCH_PLAYLIST, searchq, searchPlaylistCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_PLAYLIST);
 }
 
 // Callback after search for playlists
@@ -425,7 +428,7 @@ function searchPlaylistCallback(response) {
 
 // Adds certein playlist to list of release playlists
 function addPlaylist(id) {
-    api.call("GET", "playlist", id, onPlaylistFound, logger.error, "Playlist not added")
+    api.call(Method.GET, SpotifyUrls.PLAYLISTS, id, onPlaylistFound, logger.error, ErrorMessages.PLAYLIST_NOT_ADDED)
 }
 
 // Callback if playlist found by ID
@@ -509,7 +512,7 @@ function refreshAlbums() {
 
     for (let x in active_artists) {
         const param = `${active_artists[x].id}/albums?limit=50&include_groups=album,single&date=${date}`;
-        api.call("GET", "artist", param, albumCallback, logger.error, "Could not load albums for artist")
+        api.call(Method.GET, SpotifyUrls.ARTISTS, param, albumCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_ALBUM_FOR_ARTIST)
     }
 }
 
@@ -521,9 +524,9 @@ function albumCallback(response) {
         let album = getAlbum(item, "");
         if (album !== null) {
             song_total_++;
-            api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function (response_) {
+            api.call(Method.GET, SpotifyUrls.ALBUMS, `${album.id}/tracks?offset=0&limit=50`, function (response_) {
                 getSongsCallback(response_, album);
-            }, logger.error, "Could not save songs");
+            }, logger.error, ErrorMessages.COULD_NOT_SAVE_SONGS);
         }
     }
     total_--;
@@ -590,9 +593,9 @@ function getSongsFromPlaylists() {
     }
 
     for (let x in playlists) {
-        api.call("GET", "playlist", `${playlists[x].id}/tracks?limit=50`, function (response) {
+        api.call(Method.GET, SpotifyUrls.PLAYLISTS, `${playlists[x].id}/tracks?limit=50`, function (response) {
             getPlaylistSongsCallback(response, playlists[x].name);
-        }, logger.error, "Could not load songs from playlist");
+        }, logger.error, ErrorMessages.COULD_NOT_LOAD_SONGS_FROM_PLAYLIST);
     }
 }
 
@@ -609,9 +612,9 @@ function getPlaylistSongsCallback(response, name) {
         if (album !== null) {
             found = true;
             song_total_++;
-            api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function (response) {
+            api.call(Method.GET, SpotifyUrls.ALBUMS, `${album.id}/tracks?offset=0&limit=50`, function (response) {
                 getSongsCallback(response, album);
-            }, logger.error, "Could not save songs");
+            }, logger.error, ErrorMessages.COULD_NOT_SAVE_SONGS);
         }
     }
     if (found === false) {
@@ -695,7 +698,7 @@ function sortResults(temp) {
         temp.sort((a, b) => b.album.release_date.getTime() - a.album.release_date.getTime());
         temp.sort((a, b) => a.album.shown_in.localeCompare(b.album.shown_in));
     } else {
-        logger.error("Could not sort albums", "Unknown sort_by value");
+        logger.error(ErrorMessages.COULD_NOT_SORT_ALBUMS, ErrorMessages.UNKNOWN_SORT_BY_VALUE);
     }
 
     return temp;
@@ -817,7 +820,7 @@ function saveSettings(time, market, active_playlist, advanced_filter, not_save_d
     }
     if (time !== null) {
         if (isNaN(time) || time < 0 || time > 90) {
-            logger.error("Could not save settings", "Input is not a number")
+            logger.error(ErrorMessages.COULD_NOT_SAVE_SETTINGS, ErrorMessages.INPUT_IS_NAN)
         } else {
             user.timespan = time;
         }
@@ -844,7 +847,7 @@ function importData(value) {
         user.importUser(data);
         location.reload();
     } catch (e) {
-        logger.error("Could not load user", "The entered data is not in JSON format")
+        logger.error(ErrorMessages.COULD_NOT_LOAD_USER, ErrorMessages.INPUT_IS_MALFORED_JSON)
     }
 }
 
@@ -852,9 +855,9 @@ function importData(value) {
 async function exportData() {
     try {
         await navigator.clipboard.writeText(JSON.stringify((user.exportUser())));
-        logger.log('Copied to clipbard', "You can now save the clipboard into a file and paste it back in the settings to restore your data later")
+        logger.log(ErrorMessages.COPIED_TO_CLIPBOARD, ErrorMessages.COPIED_TO_CLIPBOARD_SUBTEXT)
     } catch (err) {
-        logger.error('Failed to copy data', err)
+        logger.error(ErrorMessages.FAILED_TO_COPY_DATA, err)
     }
 }
 
@@ -881,7 +884,7 @@ let temp_album = null;
 function saveAlbum(album, isSingle) {
     temp_album = album;
     if (current_playlist === null || current_playlist.name === "none") {
-        logger.log("Could not save song", "You have selected 'None' as your playlist, therefore the song could not be saved. Please select a playlist in the settings");
+        logger.log(ErrorMessages.COULD_NOT_SAVE_SONGS, ErrorMessages.NONE_SELECTED_AS_PLAYLIST);
         return;
     }
     const items = current_playlist.items;
@@ -899,14 +902,14 @@ function saveAlbum(album, isSingle) {
     if (user.not_save_doubles && isSingle) {
         limit = 1;
     }
-    api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=${limit}`, saveSongsFromAlbum, logger.error, "Could not save songs");
+    api.call(Method.GET, SpotifyUrls.ALBUMS, `${album}/tracks?offset=0&limit=${limit}`, saveSongsFromAlbum, logger.error, "Could not save songs");
 }
 
 function saveSongsFromAlbum(response) {
     let songs = [];
     const data = JSON.parse(response);
     if (data.items.length === 0) {
-        console.error("Empty album");
+        logger.error(ErrorMessages.UNKNOWN_ERROR, "Empty album");
         return;
     }
     if (current_playlist.name === "your_library") {
@@ -915,7 +918,7 @@ function saveSongsFromAlbum(response) {
                 songs.push(data.items[i].id);
             }
         }
-        api.call("PUT", "save_to_library", "?ids=" + songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
+        api.call(Method.PUT, SpotifyUrls.USER_TRACKS, "?ids=" + songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
     } else {
         for (let i in data.items) {
             if (matchesFilter(data.items[i].name)) {
@@ -923,16 +926,16 @@ function saveSongsFromAlbum(response) {
             }
         }
         const body = {"uris": songs};
-        api.call("POST", "add_to_playlist", current_playlist.name + "/tracks", saveToLibraryCallBack, logger.error, "Could not save song", body)
+        api.call(Method.POST, SpotifyUrls.PLAYLISTS, current_playlist.name + "/tracks", saveToLibraryCallBack, logger.error, "Could not save song", body)
     }
 }
 
 function saveToLibraryCallBack(_) {
     if (temp_album === null) {
-        console.error("Album is null in savetolibrarycallback");
+        logger.error(ErrorMessages.UNKNOWN_ERROR, "Album is null in savetolibrarycallback");
         return;
     }
-    logger.log("Saved songs", "Successfully saved songs to your library/playlist");
+    logger.log(ErrorMessages.SAVED_SONGS, ErrorMessages.SAVED_SONGS_SUBTEXT);
     targetProxy.saved = temp_album;
     temp_album = null;
 }
