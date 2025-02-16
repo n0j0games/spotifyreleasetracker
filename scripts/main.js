@@ -1,49 +1,49 @@
 /**
  * Main class for the frontend, handles all UI updates and user interactions
  * @class
-**/
+ **/
 
 import keys from "../apikey.js";
-import backend from "./backend.js";
+import logic from "./logic.js";
 
 // Stores HTML elements
 const html = {
-    authorize : document.getElementById("authorize"),
-    app : document.getElementById("app"),
-    settings_popup : document.getElementById("settingsPopup"),
-    artists_popup : {
-        popup : document.getElementById("artistPopup"),
-        item : document.getElementById("artistFG"),
-        inner : document.getElementById("artistFG").innerHTML,
-        input : document.getElementById("artistAddInput"),
-        list : document.getElementById("artistList")
+    authorize: document.getElementById("authorize"),
+    app: document.getElementById("app"),
+    settings_popup: document.getElementById("settingsPopup"),
+    artists_popup: {
+        popup: document.getElementById("artistPopup"),
+        item: document.getElementById("artistFG"),
+        inner: document.getElementById("artistFG").innerHTML,
+        input: document.getElementById("artistAddInput"),
+        list: document.getElementById("artistList")
     },
     playlist_popup: {
-        popup : document.getElementById("playlistPopup"),
-        item : document.getElementById("playlistFG"),
-        inner : document.getElementById("playlistFG").innerHTML,
-        input : document.getElementById("playlistAddInput"),
-        list : document.getElementById("playlistList")
+        popup: document.getElementById("playlistPopup"),
+        item: document.getElementById("playlistFG"),
+        inner: document.getElementById("playlistFG").innerHTML,
+        input: document.getElementById("playlistAddInput"),
+        list: document.getElementById("playlistList")
     },
-    releases : {
-        item : document.getElementById("releases"),
-        inner : document.getElementById("releases").innerHTML,
+    releases: {
+        item: document.getElementById("releases"),
+        inner: document.getElementById("releases").innerHTML,
     },
-    user_info : {
-        item : document.getElementById("loginInfo"),
-        logo : document.getElementById("loginImg"),
-        name : document.getElementById("loginUser"),
-        logout_button : document.getElementById("logoutBtn"),
-        settings_button : document.getElementById("settingsBtn")
+    user_info: {
+        item: document.getElementById("loginInfo"),
+        logo: document.getElementById("loginImg"),
+        name: document.getElementById("loginUser"),
+        logout_button: document.getElementById("logoutBtn"),
+        settings_button: document.getElementById("settingsBtn")
     },
-    filters : {
-        album : document.getElementById("albumsbtn"),
-        single : document.getElementById("singlebtn"),
-        feature : document.getElementById("featureBtn")
+    filters: {
+        album: document.getElementById("albumsbtn"),
+        single: document.getElementById("singlebtn"),
+        feature: document.getElementById("featureBtn")
     },
-    no_artists : document.getElementById("noartists"),
-    search_query_info : document.getElementById("search_query_info"),
-    spinner : document.getElementById("spinner")
+    no_artists: document.getElementById("noartists"),
+    search_query_info: document.getElementById("search_query_info"),
+    spinner: document.getElementById("spinner")
 }
 
 /*
@@ -51,11 +51,11 @@ const html = {
 */
 
 /* Main function, called on page load */
-window.onPageLoad = function() {
+window.onPageLoad = function () {
 
     let location = window.location.href.split("?")[0];
     if (location.includes("netlify.app")) {
-        location = location.replace("netlify.app","noahschuette.de");
+        location = location.replace("netlify.app", "noahschuette.de");
         window.location.href = location;
     }
     const locations = [keys.uri, keys.uri + "/", keys.uri + "/index.html"]
@@ -65,22 +65,22 @@ window.onPageLoad = function() {
     }
 
     html.app.style.display = "none";
-    if ( window.location.search.length > 0 ) {
-        backend.handleRedirect();
-    } else if ( backend.getAccessToken() === null ) {
+    if (window.location.search.length > 0) {
+        logic.handleRedirect();
+    } else if (logic.getAccessToken() === null) {
         // we don't have an access token so present token section
         html.authorize.style.display = 'flex';
         html.app.style.display = 'none';
     } else {
         html.app.style.display = 'block';
         html.authorize.style.display = 'none';
-        backend.login(onLogin);
+        logic.login(onLogin);
     }
 }
 
 /* Called after successful login procedure */
 function onLogin(response) {
-    const user = backend.onLogin(response);
+    const user = logic.onLogin(response);
     html.user_info.logo.src = user.image
     html.user_info.name.innerHTML = `Logged in as <p id="loginUserHighlight">${user.displayname}</p>`
     html.user_info.logout_button.style.display = 'block';
@@ -89,32 +89,32 @@ function onLogin(response) {
 }
 
 /* From "Connect with Spotify Button", request Authoriazation */
-window.requestAuthorization = function() {
-    backend.auth();
+window.requestAuthorization = function () {
+    logic.auth();
 }
 
 /* Logs out the user */
 window.logout = function () {
-    backend.logout();
+    logic.logout();
 }
 
 /*
     PROXY FOR UPDATING DIVS
 */
 
-/* Stores if divs are active or not */ 
+/* Stores if divs are active or not */
 let divs = {
-    artists : false,
-    settings : false,
-    playlist : false,
+    artists: false,
+    settings: false,
+    playlist: false,
 }
 
 /* Proxy, handles backend changes automatically */
 const proxy_debug = localStorage.getItem("proxy_debug");
 let target_ = {};
 const targetProxy = new Proxy(target_, {
-    set: function(target, key, value) {
-        if (proxy_debug === 'true'){
+    set: function (target, key, value) {
+        if (proxy_debug === 'true') {
             console.log(`${key} updated`);
         }
         target[key] = value;
@@ -180,7 +180,7 @@ function updateSettingsDiv() {
         <option value="none">None</option>
         <option value="your_library">Your Library</option>
     `;
-    for (let i in playlists){
+    for (let i in playlists) {
         let option = document.createElement("option");
         option.value = playlists[i].id;
         option.innerHTML = playlists[i].name;
@@ -190,14 +190,14 @@ function updateSettingsDiv() {
     sort_select.value = target_.settings.sort_by;
 }
 
-window.saveSettings = function() {
+window.saveSettings = function () {
     const time = document.getElementById("daysInput").value;
     const region = document.getElementById("marketplaceInput").value;
     const active_playlist = document.getElementById("playlistSelect").value;
     const advanced_filter = document.getElementById("advancedfilterInput").checked;
     const not_save_doubles = document.getElementById("savedoublesInput").checked;
     const sort_by = document.getElementById("sortSelect").value;
-    backend.saveSettings(time, region, active_playlist, advanced_filter, not_save_doubles, sort_by);
+    logic.saveSettings(time, region, active_playlist, advanced_filter, not_save_doubles, sort_by);
 }
 
 /*
@@ -210,18 +210,18 @@ window.enablePlaylistDiv = function (enable) {
         html.playlist_popup.popup.style.display = "flex";
         document.body.style.overflow = "hidden";
         divs.playlist = true;
-        backend.searchPlaylist("");
+        logic.searchPlaylist("");
     } else {
         document.body.style.overflow = "auto";
         html.playlist_popup.popup.style.display = "none";
         divs.playlist = false;
-        backend.refreshAlbums();
+        logic.refreshAlbums();
     }
 }
 
 const playlist_input = document.getElementById("playlistAddInput");
-playlist_input.addEventListener("input", function() {
-    backend.searchPlaylist(playlist_input.value);
+playlist_input.addEventListener("input", function () {
+    logic.searchPlaylist(playlist_input.value);
 });
 
 /* Build artist div after artists change */
@@ -274,14 +274,14 @@ function updatePlaylistDiv() {
     html.playlist_popup.list.innerHTML = html_;
 }
 
-window.addPlaylist = function(id) {
+window.addPlaylist = function (id) {
     document.getElementById("playlistAddInput").value = "";
-    backend.addPlaylist(id);
+    logic.addPlaylist(id);
 }
 
 window.removePlaylist = function (nr) {
     document.getElementById("playlistAddInput").value = "";
-    backend.removePlaylist(nr);
+    logic.removePlaylist(nr);
 }
 
 /*
@@ -294,19 +294,19 @@ window.enableArtistsDiv = function (enable) {
         html.artists_popup.popup.style.display = "flex";
         document.body.style.overflow = "hidden";
         divs.artists = true;
-        backend.searchArtist(""); // empty search that updates artist div afterwards
+        logic.searchArtist(""); // empty search that updates artist div afterwards
     } else {
         document.getElementById("artistAddInput").value = "";
         document.body.style.overflow = "auto";
         html.artists_popup.popup.style.display = "none";
         divs.artists = false;
-        backend.refreshAlbums();
+        logic.refreshAlbums();
     }
 }
 
 const input_ = document.getElementById("artistAddInput");
-input_.addEventListener("input", function() {
-    backend.searchArtist(input_.value);
+input_.addEventListener("input", function () {
+    logic.searchArtist(input_.value);
 });
 
 /* Build artist div after artists change */
@@ -367,48 +367,48 @@ window.addEventListener("keydown", function(event) {
 });
 */
 
-window.addArtist = function(id) {
+window.addArtist = function (id) {
     document.getElementById("artistAddInput").value = "";
-    backend.addArtist(id);
+    logic.addArtist(id);
 }
 
 /* Functions to manage artists, calling backend */
 
-window.exportData = function() {
-    backend.exportData();
+window.exportData = function () {
+    logic.exportData();
 }
 
 /* Import artists from clipboard */
-window.importData = function() {
+window.importData = function () {
     const input = document.getElementById("importArtistsInput");
     let confirmAction = confirm("Are you sure you want override your data?");
     if (confirmAction) {
-        backend.importData(input.value);
+        logic.importData(input.value);
     }
 }
 
-window.deleteData = function() {
+window.deleteData = function () {
     let confirmAction = confirm("Are you sure you want to delete your data? This will remove any stored data including your artists and log you out");
     if (confirmAction) {
-        backend.deleteData();
+        logic.deleteData();
     }
 }
 
-window.syncArtists = function() {
+window.syncArtists = function () {
     const item = document.getElementById("artistSync");
     item.innerHTML = "Syncing artists..."
     item.disabled = true;
-    backend.syncArtists();
+    logic.syncArtists();
 }
 
-window.hideArtist = function(nr) {
+window.hideArtist = function (nr) {
     document.getElementById("artistAddInput").value = "";
-    backend.hideArtist(nr);
+    logic.hideArtist(nr);
 }
 
 window.removeArtist = function (nr) {
     document.getElementById("artistAddInput").value = "";
-    backend.removeArtist(nr);
+    logic.removeArtist(nr);
 }
 
 /*
@@ -422,7 +422,7 @@ function updateAlbumsDiv() {
     }
 
     html.spinner.style.display = "none";
-    html.search_query_info.innerHTML = `Showing releases for ${backend.getActiveArtists()} artists & ${backend.getReleasePlaylistCount()} playlists in the last ${backend.getTimespan()} days`;
+    html.search_query_info.innerHTML = `Showing releases for ${logic.getActiveArtists()} artists & ${logic.getReleasePlaylistCount()} playlists in the last ${logic.getTimespan()} days`;
 
     // If no albums available: show empty list
     if (target_.albums.length === 0) {
@@ -476,7 +476,7 @@ function updateAlbumsDiv() {
         /*if (!result.markets.includes(backend.getMarket())) {
             htmlstring += `<p class="releaseUnreleased"><i class="fa-solid fa-clock"></i> UNRELEASED</p>`;
         } else {*/
-            htmlstring += `<p class="releaseDate"><i class="fas fa-calendar"></i> ${dateToDEFormat(result.release_date,result.real_date)}</p>`;
+        htmlstring += `<p class="releaseDate"><i class="fas fa-calendar"></i> ${dateToDEFormat(result.release_date, result.real_date)}</p>`;
         /*}*/
         htmlstring += `</div></a>`;
         const album_id = result.href.split("/")[4];
@@ -487,11 +487,11 @@ function updateAlbumsDiv() {
         if (result.type.toUpperCase() === "ALBUM") {
             isSingle = false;
         }
-        if (!(backend.albumIsSaved(album_id))) {
+        if (!(logic.albumIsSaved(album_id))) {
             htmlstring += `<button onclick="saveAlbum('${album_id}',${isSingle})" class="saveSongButton saveSongButtonPre" id="saveSongButton_${album_id}"><i class="fa-regular fa-heart"></i></button>`
         } else {
             htmlstring += `<button disabled onclick="saveAlbum('${album_id}',${isSingle})" class="saveSongButton saveSongButtonAfter" id="saveSongButton_${album_id}"><i class="fa-solid fa-heart"></i></button>`
-        } 
+        }
 
         htmlstring += `</div>` // end upper content
 
@@ -503,7 +503,7 @@ function updateAlbumsDiv() {
                 } else {
                     htmlstring += `<tr class="song">`;
                 }
-                htmlstring += `<th class="songNumber">${parseInt(y) + 1}:</th>`;                
+                htmlstring += `<th class="songNumber">${parseInt(y) + 1}:</th>`;
                 htmlstring += `<th class="songTitle">${result.songs[y].name}</th>`;
                 htmlstring += `<th>`
                 for (const z in result.songs[y].artists) {
@@ -522,7 +522,7 @@ function updateAlbumsDiv() {
     }
     if (htmlstring === "") {
         html.releases.item.innerHTML = html.releases.inner;
-        html.releases.item.children[0].style.display = "block";     
+        html.releases.item.children[0].style.display = "block";
     } else {
         html.releases.item.innerHTML = html.releases.inner + htmlstring;
     }
@@ -580,27 +580,27 @@ function updateFilterOverlay() {
 }
 
 /* Toggles filters */
-window.toggleFeatures = function() {
-    backend.toggleFilters(false, false, true)
+window.toggleFeatures = function () {
+    logic.toggleFilters(false, false, true)
 }
 
-window.toggleAlbumFilter = function() {
-    backend.toggleFilters(true, false, false)
+window.toggleAlbumFilter = function () {
+    logic.toggleFilters(true, false, false)
 }
 
-window.toggleSingleFilter = function() {
-    backend.toggleFilters(false, true, false)
+window.toggleSingleFilter = function () {
+    logic.toggleFilters(false, true, false)
 }
 
-window.saveAlbum = function(album, isSingle) {
-    if (backend.getActivePlaylist() !== 'none') {
+window.saveAlbum = function (album, isSingle) {
+    if (logic.getActivePlaylist() !== 'none') {
         const elem = document.getElementById(`saveSongButton_${album}`);
         elem.disabled = true;
     }
-    backend.saveAlbum(album, isSingle);
+    logic.saveAlbum(album, isSingle);
 }
 
-window.toggleSongs = function(album) {
+window.toggleSongs = function (album) {
     const elem = document.getElementById(`songLower_${album}`);
     if (elem.style.display !== "table") {
         elem.style.display = "table";

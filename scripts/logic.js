@@ -1,7 +1,7 @@
 /**
- * Main Backend. Handles the algorithm
+ * Main Logic. Handles the algorithm
  * @class
-**/
+ **/
 
 import SpotifyAPI from "./api.js";
 import keys from "../apikey.js";
@@ -15,9 +15,9 @@ let user = null;
 let artists = [];
 let current_playlist = null;
 let filters = {
-    album : false,
-    single : false,
-    feature : false
+    album: false,
+    single: false,
+    feature: false
 }
 
 /*
@@ -26,6 +26,7 @@ let filters = {
 
 // Called from main, requests spotify authorization
 const requiredversion = 130;
+
 function auth() {
     localStorage.setItem("releasr_auth_version", requiredversion);
     api.requestAuthorization().then(url => window.location.href = url);
@@ -33,7 +34,9 @@ function auth() {
 
 // Handles redirect from spotify login page
 function handleRedirect() {
-    api.handleRedirect( function() {window.history.pushState("", "", keys.uri);} );
+    api.handleRedirect(function () {
+        window.history.pushState("", "", keys.uri);
+    });
 }
 
 function getAccessToken() {
@@ -93,20 +96,20 @@ function playlistCallback(response) {
     const data = JSON.parse(response).items;
     for (let x in data) {
         if (data[x].owner.id === user.id)
-        list.push({name : data[x].name, id : data[x].id});
+            list.push({name: data[x].name, id: data[x].id});
     }
     user.playlists = list;
     setCurrentPlaylist();
     loadReleasePlaylists();
     loadArtists(); //Calls Step 4
     targetProxy.settings = {
-        timespan : user.timespan,
-        market : user.market,
-        active_playlist : user.active_playlist,
-        advanced_filter : user.advanced_filter,
-        sort_by : user.sort_by,
-        not_save_doubles : user.not_save_doubles,
-        playlists : user.playlists
+        timespan: user.timespan,
+        market: user.market,
+        active_playlist: user.active_playlist,
+        advanced_filter: user.advanced_filter,
+        sort_by: user.sort_by,
+        not_save_doubles: user.not_save_doubles,
+        playlists: user.playlists
     };
 }
 
@@ -128,7 +131,7 @@ function loadArtists() {
     } else {
         artists = [];
         api.call("GET", "followed_artists", null, artistCallback,
-            logger.error, "Could not load artists" );
+            logger.error, "Could not load artists");
     }
 }
 
@@ -144,6 +147,7 @@ function loadReleasePlaylists() {
 
 /* Artist getter loop: Fetch artists from Spotify in batches of 50x */
 let total = 0;
+
 function artistCallback(response) {
     const data = JSON.parse(response);
     const items = data.artists.items;
@@ -158,18 +162,25 @@ function artistCallback(response) {
             if (limit < total) {
                 api.call("GET",
                     "followed_artists",
-                    "&after="+items[items.length-1].id,
+                    "&after=" + items[items.length - 1].id,
                     artistCallback,
                     logger.error,
                     "Could not load artists");
             }
         }
-        
+
         // Update IDs of artists and add them to list
         for (let x in items) {
-            const current = { id : items[x]["id"], name : items[x]["name"], image : items[x]["images"][0]["url"], active : true, following : true, added : true};
+            const current = {
+                id: items[x]["id"],
+                name: items[x]["name"],
+                image: items[x]["images"][0]["url"],
+                active: true,
+                following: true,
+                added: true
+            };
             let inList = false;
-            for (let y in artists) { 
+            for (let y in artists) {
                 if (artists[y].id === current.id) {
                     if (!artists[y].following) {
                         artists[y].following = true;
@@ -197,8 +208,8 @@ function onArtistFound(response) {
     let image = null;
     if (data["images"].length !== 0) {
         image = data["images"][0]["url"];
-    } 
-    const current = { id : data["id"], name : data["name"], image : image, active : true, following : false, added : true};
+    }
+    const current = {id: data["id"], name: data["name"], image: image, active: true, following: false, added: true};
     insertArtist(current);
 }
 
@@ -214,7 +225,7 @@ function searchArtist(searchq) {
         api.call("GET", "artist_profile", searchq, searchSingleArtist, logger.error, "Unknown link");
     } else {
         api.call("GET", "search_artist", searchq, searchArtistCallback, searchSingleArtistError, null);
-    } 
+    }
 }
 
 // Callback if single artist is loaded from url
@@ -223,8 +234,8 @@ function searchSingleArtist(response) {
     let image = null;
     if (data["images"].length !== 0) {
         image = data["images"][0]["url"];
-    } 
-    const current = { id : data["id"], name : data["name"], image : image, active : true, following : false, added : false};
+    }
+    const current = {id: data["id"], name: data["name"], image: image, active: true, following: false, added: false};
     let found = false;
     for (let x in artists) {
         if (artists[x].id === current.id) {
@@ -249,14 +260,28 @@ function searchArtistCallback(response) {
     const data = JSON.parse(response);
     const item = data.artists.items;
     let search = [];
-    for (let i=0; i<Math.min(10,item.length); i++) {
+    for (let i = 0; i < Math.min(10, item.length); i++) {
         if (item[i].followers.total < 100) {
             continue;
         }
         if (item[i]["images"].length === 0) {
-            search.push({ id : item[i]["id"], name : item[i]["name"], image : null, active : false, following : false, added : false});
+            search.push({
+                id: item[i]["id"],
+                name: item[i]["name"],
+                image: null,
+                active: false,
+                following: false,
+                added: false
+            });
         } else {
-            search.push({ id : item[i]["id"], name : item[i]["name"], image : item[i]["images"][0]["url"], active : false, following : false, added : false});
+            search.push({
+                id: item[i]["id"],
+                name: item[i]["name"],
+                image: item[i]["images"][0]["url"],
+                active: false,
+                following: false,
+                added: false
+            });
         }
     }
     let results = [...artists];
@@ -286,7 +311,7 @@ function insertArtist(current) {
 }
 
 // Save to localstorage, call proxy
-function saveArtists() { 
+function saveArtists() {
     user.artists = artists;
     targetProxy.artists = sortArtists(artists);
     refreshAlbums();
@@ -303,7 +328,7 @@ function hideArtist(nr) {
 function removeArtist(nr) {
     for (let k in artists) {
         if (artists[nr].name === artists[k].name)
-        artists.splice(nr, 1);
+            artists.splice(nr, 1);
     }
     saveArtists();
 }
@@ -318,7 +343,7 @@ function syncArtists() {
     artists = temp;
     total = 0;
     api.call("GET", "followed_artists", null, artistCallback,
-            logger.error, "Could not load artists" );
+        logger.error, "Could not load artists");
 }
 
 // Returns a list of active artists
@@ -339,7 +364,7 @@ function getReleasePlaylistCount() {
 
 // Sorts artists, also used for release-playlists
 function sortArtists(temp) {
-    temp.sort((a,b) => a.name.localeCompare(b.name));
+    temp.sort((a, b) => a.name.localeCompare(b.name));
     return temp;
 }
 
@@ -363,13 +388,25 @@ function searchPlaylistCallback(response) {
     const data = JSON.parse(response);
     const item = data.playlists.items;
     let search = [];
-    for (let i=0; i<Math.min(10,item.length); i++) {
+    for (let i = 0; i < Math.min(10, item.length); i++) {
         if (item[i]["images"].length === 0) {
-            search.push({ id : item[i]["id"], name : item[i]["name"], image: null, owner: item[i]["owner"]["display_name"], added : false});
+            search.push({
+                id: item[i]["id"],
+                name: item[i]["name"],
+                image: null,
+                owner: item[i]["owner"]["display_name"],
+                added: false
+            });
         } else {
-            search.push({ id : item[i]["id"], name : item[i]["name"], image: item[i]["images"][0]["url"], owner: item[i]["owner"]["display_name"], added : false});
+            search.push({
+                id: item[i]["id"],
+                name: item[i]["name"],
+                image: item[i]["images"][0]["url"],
+                owner: item[i]["owner"]["display_name"],
+                added: false
+            });
         }
-        
+
     }
     let results = [...release_playlists];
     for (let i in search) {
@@ -397,8 +434,14 @@ function onPlaylistFound(response) {
     let image = null;
     if (data["images"].length !== 0) {
         image = data["images"][0]["url"];
-    } 
-    const current = { id : data["id"], name : data["name"], image: image, owner: data["owner"]["display_name"], added : true};
+    }
+    const current = {
+        id: data["id"],
+        name: data["name"],
+        image: image,
+        owner: data["owner"]["display_name"],
+        added: true
+    };
     insertPlaylist(current);
 }
 
@@ -415,7 +458,7 @@ function insertPlaylist(current) {
 }
 
 // Save to localstorage, call proxy
-function saveReleasePlaylists(playlists) { 
+function saveReleasePlaylists(playlists) {
     user.release_playlists = playlists;
     targetProxy.playlists = playlists;
     refreshAlbums();
@@ -445,7 +488,7 @@ function refreshAlbums() {
         getSongsFromPlaylists();
         return
     }
-    
+
     total_ = 0
     song_total_ = 0;
 
@@ -460,7 +503,7 @@ function refreshAlbums() {
         getSongsFromPlaylists();
         return;
     }
-    
+
     // !: Hotfix to supress content-caching, adds unused date tag to url
     const date = new Date().getDate();
 
@@ -475,13 +518,13 @@ function albumCallback(response) {
     const items = JSON.parse(response).items;
     for (let x in items) {
         const item = items[x];
-        let album = getAlbum(item, "");        
+        let album = getAlbum(item, "");
         if (album !== null) {
             song_total_++;
-            api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function(response_) {
+            api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function (response_) {
                 getSongsCallback(response_, album);
             }, logger.error, "Could not save songs");
-        } 
+        }
     }
     total_--;
     if (total_ === 0) {
@@ -492,25 +535,25 @@ function albumCallback(response) {
 }
 
 // Gets album from album item
-function getAlbum(item, playlist){
+function getAlbum(item, playlist) {
     let album = {
-        id : item.external_urls.spotify.split("/")[4],
-        title : item.name,            
-        artist : item.artists[0].name,
-        type : item.album_type,
-        href : item.external_urls.spotify,
-        image : item.images[0].url,
-        artists_list : [],
-        real_date : item.release_date,
-        release_date : item.release_date,
-        tracks : item.total_tracks,
-        markets : item.available_markets,
-        isfeature : true,
-        show : true,
-        shown_in : playlist,
-        songs : [],
-        explicit : false,
-        dummy : 0
+        id: item.external_urls.spotify.split("/")[4],
+        title: item.name,
+        artist: item.artists[0].name,
+        type: item.album_type,
+        href: item.external_urls.spotify,
+        image: item.images[0].url,
+        artists_list: [],
+        real_date: item.release_date,
+        release_date: item.release_date,
+        tracks: item.total_tracks,
+        markets: item.available_markets,
+        isfeature: true,
+        show: true,
+        shown_in: playlist,
+        songs: [],
+        explicit: false,
+        dummy: 0
     }
     for (const y in item.artists) {
         album.artists_list.push(item.artists[y].name);
@@ -528,11 +571,11 @@ function getAlbum(item, playlist){
         }
     }
     const dateArray = album.release_date.split('-');
-    album.release_date = new Date(dateArray[0], dateArray[1]-1, dateArray[2]);
+    album.release_date = new Date(dateArray[0], dateArray[1] - 1, dateArray[2]);
     const intimespan = inTimeSpan(album.release_date);
     const passFilter = matchesFilter(album.title);
     if (intimespan && passFilter && !fromVariousArtists) {
-        return album; 
+        return album;
     }
     return null;
 }
@@ -547,8 +590,8 @@ function getSongsFromPlaylists() {
     }
 
     for (let x in playlists) {
-        api.call("GET", "playlist", `${playlists[x].id}/tracks?limit=50`, function(response) {
-            getPlaylistSongsCallback(response, playlists[x].name);    
+        api.call("GET", "playlist", `${playlists[x].id}/tracks?limit=50`, function (response) {
+            getPlaylistSongsCallback(response, playlists[x].name);
         }, logger.error, "Could not load songs from playlist");
     }
 }
@@ -568,7 +611,7 @@ function getPlaylistSongsCallback(response, name) {
             song_total_++;
             api.call("GET", "album_tracks", `${album.id}/tracks?offset=0&limit=50`, function (response) {
                 getSongsCallback(response, album);
-            }, logger.error, "Could not save songs");  
+            }, logger.error, "Could not save songs");
         }
     }
     if (found === false) {
@@ -591,8 +634,8 @@ function getSongsCallback(response, album) {
             artists.push(items[x].artists[y].name);
         }
         if (matchesFilter(items[x].name)) {
-            songs.push({"name" : items[x].name, "artists" : artists, "id" : items[x].id});
-        }  
+            songs.push({"name": items[x].name, "artists": artists, "id": items[x].id});
+        }
     }
     album.songs = songs;
     album.tracks = songs.length;
@@ -640,21 +683,21 @@ function getSongsCallback(response, album) {
 function sortResults(temp) {
     const sort_by = user.sort_by;
     if (sort_by === "release_date") {
-        temp.sort((a,b) => a.album.shown_in.localeCompare(b.album.shown_in));
-        temp.sort((a,b) => a.album.artist.localeCompare(b.album.artist));
-        temp.sort((a,b) => b.album.release_date.getTime() - a.album.release_date.getTime());        
+        temp.sort((a, b) => a.album.shown_in.localeCompare(b.album.shown_in));
+        temp.sort((a, b) => a.album.artist.localeCompare(b.album.artist));
+        temp.sort((a, b) => b.album.release_date.getTime() - a.album.release_date.getTime());
     } else if (sort_by === "alphabetical") {
-        temp.sort((a,b) => a.album.shown_in.localeCompare(b.album.shown_in));
-        temp.sort((a,b) => b.album.release_date.getTime() - a.album.release_date.getTime());
-        temp.sort((a,b) => a.album.artist.localeCompare(b.album.artist));
+        temp.sort((a, b) => a.album.shown_in.localeCompare(b.album.shown_in));
+        temp.sort((a, b) => b.album.release_date.getTime() - a.album.release_date.getTime());
+        temp.sort((a, b) => a.album.artist.localeCompare(b.album.artist));
     } else if (sort_by === "playlist") {
-        temp.sort((a,b) => a.album.artist.localeCompare(b.album.artist));
-        temp.sort((a,b) => b.album.release_date.getTime() - a.album.release_date.getTime());
-        temp.sort((a,b) => a.album.shown_in.localeCompare(b.album.shown_in));
+        temp.sort((a, b) => a.album.artist.localeCompare(b.album.artist));
+        temp.sort((a, b) => b.album.release_date.getTime() - a.album.release_date.getTime());
+        temp.sort((a, b) => a.album.shown_in.localeCompare(b.album.shown_in));
     } else {
         logger.error("Could not sort albums", "Unknown sort_by value");
     }
-    
+
     return temp;
 }
 
@@ -676,22 +719,22 @@ function matchesFilter(string) {
     }
     string = string.toLowerCase();
     return !(string.includes("acapella")
-    || string.includes("a capella")
-    || string.includes("a cappella")
-    || string.includes("acappella")
-    || string.includes("instrumental")
-    || string.includes("slowed")
-    || string.includes("night core")
-    || string.includes("nightcore")
-    || string.includes("sped up"));
+        || string.includes("a capella")
+        || string.includes("a cappella")
+        || string.includes("acappella")
+        || string.includes("instrumental")
+        || string.includes("slowed")
+        || string.includes("night core")
+        || string.includes("nightcore")
+        || string.includes("sped up"));
 }
 
-/* toggles the specific filters, call via main */ 
+/* toggles the specific filters, call via main */
 function toggleFilters(album, single, feature) {
 
     if (feature) {
         filters.feature = !filters.feature;
-    } 
+    }
     if (album) {
         if (filters.album) {
             filters.album = false;
@@ -699,7 +742,7 @@ function toggleFilters(album, single, feature) {
             filters.album = true;
             filters.single = false;
         }
-    } 
+    }
     if (single) {
         if (filters.single) {
             filters.single = false;
@@ -719,7 +762,7 @@ function filterAlbums() {
         return;
     }
     removeDuplicates(results);
-    
+
     for (let x in results) {
         if (filters.feature && results[x].album.isfeature) {
             results[x].album.show = false;
@@ -732,8 +775,8 @@ function filterAlbums() {
 
 // Removes duplicates from results
 function removeDuplicates(temp) {
-    for (let i=0; i<temp.length; i++) {
-        for (let j=i+1; j<temp.length; j++) {
+    for (let i = 0; i < temp.length; i++) {
+        for (let j = i + 1; j < temp.length; j++) {
             if (temp[i].album.id === temp[j].album.id) {
                 temp.splice(i, 1);
                 i--;
@@ -747,7 +790,7 @@ function removeDuplicates(temp) {
 */
 
 /* Change which current playlist is selected, called at start and if changed in settings */
-function setCurrentPlaylist(){
+function setCurrentPlaylist() {
     const saved_playlists = user.saved_playlists;
     if (user.saved_playlists === undefined) {
         user.saved_playlists = [];
@@ -759,7 +802,7 @@ function setCurrentPlaylist(){
         }
     }
     if (current_playlist === null && user.active_playlist !== "none") {
-        current_playlist = {"name" : user.active_playlist, "items" : []};
+        current_playlist = {"name": user.active_playlist, "items": []};
         let temp_ = user.saved_playlists;
         temp_.push(current_playlist);
         user.saved_playlists = temp_;
@@ -775,11 +818,11 @@ function saveSettings(time, market, active_playlist, advanced_filter, not_save_d
     if (time !== null) {
         if (isNaN(time) || time < 0 || time > 90) {
             logger.error("Could not save settings", "Input is not a number")
-        } else {                    
+        } else {
             user.timespan = time;
         }
     }
-    if (market !== null) {        
+    if (market !== null) {
         user.market = market;
     }
     if (advanced_filter !== null) {
@@ -817,7 +860,7 @@ async function exportData() {
 
 // Reset artists, called from frontend
 function deleteData() {
-    localStorage.removeItem("user_"+user.id);
+    localStorage.removeItem("user_" + user.id);
     logout();
     //pantry.call("DELETE", user.id, logout, logger.error, "Could not delete user from pantry");
 }
@@ -834,6 +877,7 @@ function albumIsSaved(album) {
 }
 
 let temp_album = null;
+
 function saveAlbum(album, isSingle) {
     temp_album = album;
     if (current_playlist === null || current_playlist.name === "none") {
@@ -855,7 +899,7 @@ function saveAlbum(album, isSingle) {
     if (user.not_save_doubles && isSingle) {
         limit = 1;
     }
-    api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=${limit}`, saveSongsFromAlbum, logger.error, "Could not save songs");  
+    api.call("GET", "album_tracks", `${album}/tracks?offset=0&limit=${limit}`, saveSongsFromAlbum, logger.error, "Could not save songs");
 }
 
 function saveSongsFromAlbum(response) {
@@ -871,14 +915,14 @@ function saveSongsFromAlbum(response) {
                 songs.push(data.items[i].id);
             }
         }
-        api.call("PUT", "save_to_library", "?ids="+songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
+        api.call("PUT", "save_to_library", "?ids=" + songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
     } else {
-        for (let i in data.items) {       
+        for (let i in data.items) {
             if (matchesFilter(data.items[i].name)) {
-                songs.push("spotify:track:"+data.items[i].id);
-            }     
+                songs.push("spotify:track:" + data.items[i].id);
+            }
         }
-        const body = {"uris" : songs};
+        const body = {"uris": songs};
         api.call("POST", "add_to_playlist", current_playlist.name + "/tracks", saveToLibraryCallBack, logger.error, "Could not save song", body)
     }
 }
@@ -890,11 +934,12 @@ function saveToLibraryCallBack(_) {
     }
     logger.log("Saved songs", "Successfully saved songs to your library/playlist");
     targetProxy.saved = temp_album;
-    temp_album = null;   
+    temp_album = null;
 }
 
 
-export default {getActiveArtists,
+export default {
+    getActiveArtists,
     getTimespan,
     refreshAlbums,
     exportData,
