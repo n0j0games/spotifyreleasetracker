@@ -10,6 +10,7 @@ export const ErrorMessages = {
     COULD_NOT_LOAD_SONGS_FROM_PLAYLIST: "Could not load songs from playlist",
     COULD_NOT_LOAD_ALBUM_FOR_ARTIST: "Could not load albums for artist",
     COULD_NOT_SAVE_SONGS: "Could not save songs",
+    COULD_NOT_LOAD_SONGS_FROM_ALBUM: "Could not load songs from album",
     COULD_NOT_SORT_ALBUMS: "Could not sort albums",
     COULD_NOT_SAVE_SETTINGS: "Could not save settings",
     FAILED_TO_COPY_DATA: "Failed to copy data",

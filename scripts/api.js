@@ -36,37 +36,52 @@ class SpotifyAPI {
      * @param body
      * @param call_count
      */
-    call(method, url, param, true_callback, error_callback_, error_message, body = null, call_count = 0) {
-        let self = this;
-        let xhr = new XMLHttpRequest();
-        let url_ = url;
-        if (param !== null) {
-            url_ += param;
-        }
-        xhr.open(method, url_, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Authorization', 'Bearer ' + this.access_token);
-        xhr.send(JSON.stringify(body));
-        xhr.onload = function () {
-            if (self.show_api_calls === "true")
-                console.log("Called", method, url_, this.status)
-            if (this.status === 200 || this.status === 201) {
-                true_callback(this.response);
-            } else if (this.status === 401) {
+    async call(method, url, param, true_callback, error_callback_, error_message, body = null, call_count = 0) {
+        const self = this;
+        this.asyncCall(method, url, param, body).then((response) => {
+          true_callback(response);
+        }).catch(async function(err) {
+            if (err.status === 401) {
                 refreshToken(self);
-            } else if (this.status === 429) {
+            } else if (err.status === 429) {
                 if (call_count > 10) {
                     self.error_callback(this.status, "Timed out. Refresh the page or try again later!");
                 } else {
                     console.log("Too many requests, waiting 1s")
-                    setTimeout(function () {
-                        self.call(method, url, param, true_callback, error_callback_, error_message, body, call_count + 1);
-                    }, 1000);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await self.call(method, url, param, true_callback, error_callback_, error_message, body, call_count + 1);
                 }
             } else {
-                self.error_callback(this.status, `${error_message}; Error may caused by Spotify API: ${this.responseText}`);
+                self.error_callback(err.status, `${error_message}; Error may caused by Spotify API: ${err.statusText}`);
             }
-        }
+        });
+    }
+
+    asyncCall(method, url, param, body = null) {
+        return new Promise((resolve, reject) => {
+            let self = this;
+            let xhr = new XMLHttpRequest();
+            let url_ = url;
+            if (param !== null) {
+                url_ += param;
+            }
+            xhr.open(method, url_, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Authorization', 'Bearer ' + this.access_token);
+            xhr.send(JSON.stringify(body));
+            xhr.onload = function () {
+                if (self.show_api_calls === "true")
+                    console.log("Called", method, url_, this.status)
+                if (this.status === 200 || this.status === 201) {
+                    resolve(this.response);
+                } else {
+                    reject({
+                        status: this.status,
+                        statusText: this.statusText,
+                    })
+                }
+            }
+        });
     }
 
     /* AUTHORIZATION */

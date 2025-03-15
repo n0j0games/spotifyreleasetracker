@@ -53,7 +53,7 @@ const html = {
 */
 
 /* Main function, called on page load */
-window.onPageLoad = function () {
+window.onPageLoad = async function () {
 
     let location = window.location.href.split("?")[0];
     if (location.includes("netlify.app")) {
@@ -76,13 +76,13 @@ window.onPageLoad = function () {
     } else {
         html.app.style.display = 'block';
         html.authorize.style.display = 'none';
-        logic.login(onLogin);
+        await logic.login(onLogin);
     }
 }
 
 /* Called after successful login procedure */
-function onLogin(response) {
-    const user = logic.onLogin(response);
+async function onLogin(response) {
+    const user = await logic.onLogin(response);
     html.user_info.logo.src = user.image
     html.user_info.name.innerHTML = `Logged in as <p id="loginUserHighlight">${user.displayname}</p>`
     html.user_info.logout_button.style.display = 'block';
@@ -206,24 +206,24 @@ window.saveSettings = function () {
     RELEASE-PLAYLIST DIV
 */
 
-window.enablePlaylistDiv = function (enable) {
+window.enablePlaylistDiv = async function (enable) {
     if (enable) {
         document.getElementById("playlistAddInput").value = "";
         html.playlist_popup.popup.style.display = "flex";
         document.body.style.overflow = "hidden";
         divs.playlist = true;
-        logic.searchPlaylist("");
+        await logic.searchPlaylist("");
     } else {
         document.body.style.overflow = "auto";
         html.playlist_popup.popup.style.display = "none";
         divs.playlist = false;
-        logic.refreshAlbums();
+        await logic.refreshAlbums();
     }
 }
 
 const playlist_input = document.getElementById("playlistAddInput");
-playlist_input.addEventListener("input", function () {
-    logic.searchPlaylist(playlist_input.value);
+playlist_input.addEventListener("input", async function () {
+    await logic.searchPlaylist(playlist_input.value);
 });
 
 /* Build artist div after artists change */
@@ -276,14 +276,14 @@ function updatePlaylistDiv() {
     html.playlist_popup.list.innerHTML = html_;
 }
 
-window.addPlaylist = function (id) {
+window.addPlaylist = async function (id) {
     document.getElementById("playlistAddInput").value = "";
-    logic.addPlaylist(id);
+    await logic.addPlaylist(id);
 }
 
-window.removePlaylist = function (nr) {
+window.removePlaylist = async function (nr) {
     document.getElementById("playlistAddInput").value = "";
-    logic.removePlaylist(nr);
+    await logic.removePlaylist(nr);
 }
 
 /*
@@ -291,24 +291,24 @@ window.removePlaylist = function (nr) {
 */
 
 /* From Your Artists Button */
-window.enableArtistsDiv = function (enable) {
+window.enableArtistsDiv = async function (enable) {
     if (enable) {
         html.artists_popup.popup.style.display = "flex";
         document.body.style.overflow = "hidden";
         divs.artists = true;
-        logic.searchArtist(""); // empty search that updates artist div afterwards
+        await logic.searchArtist(""); // empty search that updates artist div afterwards
     } else {
         document.getElementById("artistAddInput").value = "";
         document.body.style.overflow = "auto";
         html.artists_popup.popup.style.display = "none";
         divs.artists = false;
-        logic.refreshAlbums();
+        await logic.refreshAlbums();
     }
 }
 
 const input_ = document.getElementById("artistAddInput");
-input_.addEventListener("input", function () {
-    logic.searchArtist(input_.value);
+input_.addEventListener("input", async function () {
+    await logic.searchArtist(input_.value);
 });
 
 /* Build artist div after artists change */
@@ -369,48 +369,48 @@ window.addEventListener("keydown", function(event) {
 });
 */
 
-window.addArtist = function (id) {
+window.addArtist = async function (id) {
     document.getElementById("artistAddInput").value = "";
-    logic.addArtist(id);
+    await logic.addArtist(id);
 }
 
 /* Functions to manage artists, calling backend */
 
-window.exportData = function () {
-    logic.exportData();
+window.exportData = async function () {
+    await logic.exportData();
 }
 
 /* Import artists from clipboard */
-window.importData = function () {
+window.importData = async function () {
     const input = document.getElementById("importArtistsInput");
     let confirmAction = confirm("Are you sure you want override your data?");
     if (confirmAction) {
-        logic.importData(input.value);
+        await logic.importData(input.value);
     }
 }
 
-window.deleteData = function () {
+window.deleteData = async function () {
     let confirmAction = confirm("Are you sure you want to delete your data? This will remove any stored data including your artists and log you out");
     if (confirmAction) {
-        logic.deleteData();
+        await logic.deleteData();
     }
 }
 
-window.syncArtists = function () {
+window.syncArtists = async function () {
     const item = document.getElementById("artistSync");
     item.innerHTML = "Syncing artists..."
     item.disabled = true;
-    logic.syncArtists();
+    await logic.syncArtists();
 }
 
-window.hideArtist = function (nr) {
+window.hideArtist = async function (nr) {
     document.getElementById("artistAddInput").value = "";
-    logic.hideArtist(nr);
+    await logic.hideArtist(nr);
 }
 
-window.removeArtist = function (nr) {
+window.removeArtist = async function (nr) {
     document.getElementById("artistAddInput").value = "";
-    logic.removeArtist(nr);
+    await logic.removeArtist(nr);
 }
 
 /*
@@ -594,12 +594,12 @@ window.toggleSingleFilter = function () {
     logic.toggleFilters(false, true, false)
 }
 
-window.saveAlbum = function (album, isSingle) {
+window.saveAlbum = async function (album, isSingle) {
     if (logic.getActivePlaylist() !== 'none') {
         const elem = document.getElementById(`saveSongButton_${album}`);
         elem.disabled = true;
     }
-    logic.saveAlbum(album, isSingle);
+    await logic.saveAlbum(album, isSingle);
 }
 
 window.toggleSongs = function (album) {

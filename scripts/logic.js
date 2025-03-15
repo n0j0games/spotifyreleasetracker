@@ -31,7 +31,7 @@ let filters = {
 const requiredversion = 130;
 
 function auth() {
-    localStorage.setItem("releasr_auth_version", requiredversion);
+    localStorage.setItem("releasr_auth_version", requiredversion.toString());
     api.requestAuthorization().then(url => window.location.href = url);
 }
 
@@ -64,37 +64,28 @@ function logout() {
 //let temp_data = null;
 
 /* Login Step 1: Request user Info */
-function login(onLogin) {
+async function login(onLogin) {
     const version = localStorage.getItem("releasr_auth_version");
     if (version === null || version < requiredversion) {
-        localStorage.setItem("releasr_auth_version", requiredversion);
+        localStorage.setItem("releasr_auth_version", requiredversion.toString());
         logout();
         return;
     }
 
-    api.call(Method.GET, SpotifyUrls.USER, null, onLogin, logger.error, ErrorMessages.COULD_NOT_LOAD_USER) //Calls Step 2
-
-    /*api.call("GET", "user_profile", null, function(response) {
-        temp_data = JSON.parse(response);
-        pantry.call("GET", temp_data.id, onLogin, logger.error, "Could not load user profile");
-    }, logger.error, "Could not load user profile") */
+    await api.call(Method.GET, SpotifyUrls.USER, null, onLogin, logger.error, ErrorMessages.COULD_NOT_LOAD_USER) //Calls Step 2
 }
 
 /* Login Step 2: Called after successful login procedure from main */
-function onLogin(response) {
-    /*let pantry_data = null;
-    if (response != null) {
-        pantry_data = JSON.parse(response);    
-    }*/
+async function onLogin(response) {
     user = new User(JSON.parse(response), null);
 
-    api.call(Method.GET, SpotifyUrls.USER_PLAYLISTS, null, playlistCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_USER) //Calls Step 3
+    await api.call(Method.GET, SpotifyUrls.USER_PLAYLISTS, null, playlistCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_USER) //Calls Step 3
 
     return user.getProfile();
 }
 
 /* Login Step 3: Callback from playlists, loads user info */
-function playlistCallback(response) {
+async function playlistCallback(response) {
     let list = []
     const data = JSON.parse(response).items;
     for (let x in data) {
@@ -104,7 +95,7 @@ function playlistCallback(response) {
     user.playlists = list;
     setCurrentPlaylist();
     loadReleasePlaylists();
-    loadArtists(); //Calls Step 4
+    await loadArtists(); //Calls Step 4
     targetProxy.settings = {
         timespan: user.timespan,
         market: user.market,
@@ -121,19 +112,19 @@ function playlistCallback(response) {
 */
 
 /* Login Step 4: Loading Artists, after Playlist is set */
-function loadArtists() {
+async function loadArtists() {
     artists = user.artists;
     if (artists !== null) {
         if (artists.length === 0) {
-            getSongsFromPlaylists();
+            await getSongsFromPlaylists();
         } else {
             artists = sortArtists(artists);
             targetProxy.artists = artists;
-            refreshAlbums();
+            await refreshAlbums();
         }
     } else {
         artists = [];
-        api.call(Method.GET, SpotifyUrls.USER_FOLLOWING, null, artistCallback,
+        await api.call(Method.GET, SpotifyUrls.USER_FOLLOWING, null, artistCallback,
             logger.error, ErrorMessages.COULD_NOT_LOAD_ARTISTS);
     }
 }
@@ -151,7 +142,7 @@ function loadReleasePlaylists() {
 /* Artist getter loop: Fetch artists from Spotify in batches of 50x */
 let total = 0;
 
-function artistCallback(response) {
+async function artistCallback(response) {
     const data = JSON.parse(response);
     const items = data.artists.items;
     const limit = data.artists.limit;
@@ -163,7 +154,7 @@ function artistCallback(response) {
                 total = items.length;
             }
             if (limit < total) {
-                api.call(Method.GET,
+                await api.call(Method.GET,
                     SpotifyUrls.USER_FOLLOWING,
                     "&after=" + items[items.length - 1].id,
                     artistCallback,
@@ -197,27 +188,27 @@ function artistCallback(response) {
             }
         }
     }
-    saveArtists();
+    await saveArtists();
 }
 
 // Called from frontend, adds artist
-function addArtist(id) {
-    api.call(Method.GET, SpotifyUrls.ARTISTS, id, onArtistFound, logger.error, ErrorMessages.ARTIST_NOT_ADDED)
+async function addArtist(id) {
+    await api.call(Method.GET, SpotifyUrls.ARTISTS, id, onArtistFound, logger.error, ErrorMessages.ARTIST_NOT_ADDED)
 }
 
 // Callback if artist found by ID
-function onArtistFound(response) {
+async function onArtistFound(response) {
     const data = JSON.parse(response);
     let image = null;
     if (data["images"].length !== 0) {
         image = data["images"][0]["url"];
     }
     const current = {id: data["id"], name: data["name"], image: image, active: true, following: false, added: true};
-    insertArtist(current);
+    await insertArtist(current);
 }
 
 // Searching for artists via search query
-function searchArtist(searchq) {
+async function searchArtist(searchq) {
     searchq = searchq.trim();
     if (searchq.length === 0) {
         targetProxy.artists = artists;
@@ -225,9 +216,9 @@ function searchArtist(searchq) {
     }
     if (searchq.toLowerCase().startsWith("http://") || searchq.toLowerCase().startsWith("https://")) {
         searchq = searchq.split("artist/")[1].split("?")[0];
-        api.call(Method.GET, SpotifyUrls.ARTISTS, searchq, searchSingleArtist, logger.error, ErrorMessages.UNKNOWN_LINK);
+        await api.call(Method.GET, SpotifyUrls.ARTISTS, searchq, searchSingleArtist, logger.error, ErrorMessages.UNKNOWN_LINK);
     } else {
-        api.call(Method.GET, SpotifyUrls.SEARCH_ARTIST, searchq, searchArtistCallback, searchSingleArtistError, null);
+        await api.call(Method.GET, SpotifyUrls.SEARCH_ARTIST, searchq, searchArtistCallback, searchSingleArtistError, null);
     }
 }
 
@@ -303,41 +294,41 @@ function searchArtistCallback(response) {
 }
 
 // Insert artist
-function insertArtist(current) {
+async function insertArtist(current) {
     for (let x in artists) {
         if (artists[x].id === current.id) {
             return;
         }
     }
     artists.unshift(current);
-    saveArtists();
+    await saveArtists();
 }
 
 // Save to localstorage, call proxy
-function saveArtists() {
+async function saveArtists() {
     user.artists = artists;
     targetProxy.artists = sortArtists(artists);
-    refreshAlbums();
+    await refreshAlbums();
 }
 
 // Hide artist, called from frontend
-function hideArtist(nr) {
+async function hideArtist(nr) {
     artists[nr].active = !artists[nr].active;
-    saveArtists();
+    await saveArtists();
 
 }
 
 // Remove artist, called from frontend
-function removeArtist(nr) {
+async function removeArtist(nr) {
     for (let k in artists) {
         if (artists[nr].name === artists[k].name)
             artists.splice(nr, 1);
     }
-    saveArtists();
+    await saveArtists();
 }
 
 // Sync artists with spotify, called from frontend
-function syncArtists() {
+async function syncArtists() {
     let temp = [];
     for (let k in artists) {
         if (!artists[k].following)
@@ -345,7 +336,7 @@ function syncArtists() {
     }
     artists = temp;
     total = 0;
-    api.call(Method.GET, SpotifyUrls.USER_FOLLOWING, null, artistCallback,
+    await api.call(Method.GET, SpotifyUrls.USER_FOLLOWING, null, artistCallback,
         logger.error, "Could not load artists");
 }
 
@@ -376,13 +367,13 @@ function sortArtists(temp) {
 */
 
 // Search for playlists via search query
-function searchPlaylist(searchq) {
+async function searchPlaylist(searchq) {
     searchq = searchq.trim();
     if (searchq.length === 0) {
         targetProxy.playlists = user.release_playlists;
         return;
     }
-    api.call(Method.GET, SpotifyUrls.SEARCH_PLAYLIST, searchq, searchPlaylistCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_PLAYLIST);
+    await api.call(Method.GET, SpotifyUrls.SEARCH_PLAYLIST, searchq, searchPlaylistCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_PLAYLIST);
 }
 
 // Callback after search for playlists
@@ -427,12 +418,12 @@ function searchPlaylistCallback(response) {
 }
 
 // Adds certein playlist to list of release playlists
-function addPlaylist(id) {
-    api.call(Method.GET, SpotifyUrls.PLAYLISTS, id, onPlaylistFound, logger.error, ErrorMessages.PLAYLIST_NOT_ADDED)
+async function addPlaylist(id) {
+    await api.call(Method.GET, SpotifyUrls.PLAYLISTS, id, onPlaylistFound, logger.error, ErrorMessages.PLAYLIST_NOT_ADDED)
 }
 
 // Callback if playlist found by ID
-function onPlaylistFound(response) {
+async function onPlaylistFound(response) {
     const data = JSON.parse(response);
     let image = null;
     if (data["images"].length !== 0) {
@@ -445,11 +436,11 @@ function onPlaylistFound(response) {
         owner: data["owner"]["display_name"],
         added: true
     };
-    insertPlaylist(current);
+    await insertPlaylist(current);
 }
 
 // Insert playlist
-function insertPlaylist(current) {
+async function insertPlaylist(current) {
     const playlists = user.release_playlists;
     for (let x in playlists) {
         if (playlists[x].id === current.id) {
@@ -457,23 +448,23 @@ function insertPlaylist(current) {
         }
     }
     playlists.unshift(current);
-    saveReleasePlaylists(playlists);
+    await saveReleasePlaylists(playlists);
 }
 
 // Save to localstorage, call proxy
-function saveReleasePlaylists(playlists) {
+async function saveReleasePlaylists(playlists) {
     user.release_playlists = playlists;
     targetProxy.playlists = playlists;
-    refreshAlbums();
+    await refreshAlbums();
 }
 
-function removePlaylist(nr) {
+async function removePlaylist(nr) {
     const playlists = user.release_playlists;
     for (let k in playlists) {
         if (playlists[nr].name === playlists[k].name)
             playlists.splice(nr, 1);
     }
-    saveReleasePlaylists(playlists);
+    await saveReleasePlaylists(playlists);
 }
 
 /*
@@ -485,10 +476,10 @@ let total_ = 0;
 let song_total_ = 0;
 
 // Refresh Albums, called after artists window closed and after first artist load
-function refreshAlbums() {
+async function refreshAlbums() {
     results = [];
-    if (artists.size === 0) {
-        getSongsFromPlaylists();
+    if (artists.length === 0) {
+        await getSongsFromPlaylists();
         return
     }
 
@@ -503,7 +494,7 @@ function refreshAlbums() {
         }
     }
     if (total_ === 0) {
-        getSongsFromPlaylists();
+        await getSongsFromPlaylists();
         return;
     }
 
@@ -512,11 +503,11 @@ function refreshAlbums() {
 
     for (let x in active_artists) {
         const param = `${active_artists[x].id}/albums?limit=50&include_groups=album,single&date=${date}`;
-        api.call(Method.GET, SpotifyUrls.ARTISTS, param, albumCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_ALBUM_FOR_ARTIST)
+        await api.call(Method.GET, SpotifyUrls.ARTISTS, param, albumCallback, logger.error, ErrorMessages.COULD_NOT_LOAD_ALBUM_FOR_ARTIST)
     }
 }
 
-function albumCallback(response) {
+async function albumCallback(response) {
     //const searched_artist = JSON.parse(response).href.split("/")[5];
     const items = JSON.parse(response).items;
     for (let x in items) {
@@ -524,21 +515,20 @@ function albumCallback(response) {
         let album = getAlbum(item, "");
         if (album !== null) {
             song_total_++;
-            api.call(Method.GET, SpotifyUrls.ALBUMS, `${album.id}/tracks?offset=0&limit=50`, function (response_) {
+            await api.call(Method.GET, SpotifyUrls.ALBUMS, `${album.id}/tracks?offset=0&limit=50`, function (response_) {
                 getSongsCallback(response_, album);
-            }, logger.error, ErrorMessages.COULD_NOT_SAVE_SONGS);
+            }, logger.error, ErrorMessages.COULD_NOT_LOAD_SONGS_FROM_ALBUM);
         }
     }
     total_--;
     if (total_ === 0) {
-        //results = sortResults(results);
-        //filterAlbums();
-        getSongsFromPlaylists();
+        await getSongsFromPlaylists();
     }
 }
 
 // Gets album from album item
 function getAlbum(item, playlist) {
+
     let album = {
         id: item.external_urls.spotify.split("/")[4],
         title: item.name,
@@ -584,7 +574,7 @@ function getAlbum(item, playlist) {
 }
 
 // Add songs from release-playlists
-function getSongsFromPlaylists() {
+async function getSongsFromPlaylists() {
     const playlists = user.release_playlists;
 
     if (playlists.length === 0) {
@@ -593,14 +583,14 @@ function getSongsFromPlaylists() {
     }
 
     for (let x in playlists) {
-        api.call(Method.GET, SpotifyUrls.PLAYLISTS, `${playlists[x].id}/tracks?limit=50`, function (response) {
+        await api.call(Method.GET, SpotifyUrls.PLAYLISTS, `${playlists[x].id}/tracks?limit=50`, function (response) {
             getPlaylistSongsCallback(response, playlists[x].name);
         }, logger.error, ErrorMessages.COULD_NOT_LOAD_SONGS_FROM_PLAYLIST);
     }
 }
 
 // Callback after loading songs from release-playlists
-function getPlaylistSongsCallback(response, name) {
+async function getPlaylistSongsCallback(response, name) {
     let items = JSON.parse(response);
     let found = false;
     for (let x in items.items) {
@@ -612,7 +602,7 @@ function getPlaylistSongsCallback(response, name) {
         if (album !== null) {
             found = true;
             song_total_++;
-            api.call(Method.GET, SpotifyUrls.ALBUMS, `${album.id}/tracks?offset=0&limit=50`, function (response) {
+            await api.call(Method.GET, SpotifyUrls.ALBUMS, `${album.id}/tracks?offset=0&limit=50`, function (response) {
                 getSongsCallback(response, album);
             }, logger.error, ErrorMessages.COULD_NOT_SAVE_SONGS);
         }
@@ -704,12 +694,13 @@ function sortResults(temp) {
     return temp;
 }
 
+const now = new Date().getTime();
+
 // Check if release is in timespan
 function inTimeSpan(date) {
     if (user.timespan === -1) {
         return true;
     }
-    const now = new Date().getTime();
     let diff = Math.abs(now - date.getTime());
     diff = diff / (1000 * 60 * 60 * 24);
     return (diff <= user.timespan)
@@ -881,7 +872,7 @@ function albumIsSaved(album) {
 
 let temp_album = null;
 
-function saveAlbum(album, isSingle) {
+async function saveAlbum(album, isSingle) {
     temp_album = album;
     if (current_playlist === null || current_playlist.name === "none") {
         logger.log(ErrorMessages.COULD_NOT_SAVE_SONGS, ErrorMessages.NONE_SELECTED_AS_PLAYLIST);
@@ -902,10 +893,10 @@ function saveAlbum(album, isSingle) {
     if (user.not_save_doubles && isSingle) {
         limit = 1;
     }
-    api.call(Method.GET, SpotifyUrls.ALBUMS, `${album}/tracks?offset=0&limit=${limit}`, saveSongsFromAlbum, logger.error, "Could not save songs");
+    await api.call(Method.GET, SpotifyUrls.ALBUMS, `${album}/tracks?offset=0&limit=${limit}`, saveSongsFromAlbum, logger.error, "Could not save songs");
 }
 
-function saveSongsFromAlbum(response) {
+async function saveSongsFromAlbum(response) {
     let songs = [];
     const data = JSON.parse(response);
     if (data.items.length === 0) {
@@ -918,7 +909,7 @@ function saveSongsFromAlbum(response) {
                 songs.push(data.items[i].id);
             }
         }
-        api.call(Method.PUT, SpotifyUrls.USER_TRACKS, "?ids=" + songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
+        await api.call(Method.PUT, SpotifyUrls.USER_TRACKS, "?ids=" + songs.join(','), saveToLibraryCallBack, logger.error, "Could not save song");
     } else {
         for (let i in data.items) {
             if (matchesFilter(data.items[i].name)) {
@@ -926,7 +917,7 @@ function saveSongsFromAlbum(response) {
             }
         }
         const body = {"uris": songs};
-        api.call(Method.POST, SpotifyUrls.PLAYLISTS, current_playlist.name + "/tracks", saveToLibraryCallBack, logger.error, "Could not save song", body)
+        await api.call(Method.POST, SpotifyUrls.PLAYLISTS, current_playlist.name + "/tracks", saveToLibraryCallBack, logger.error, "Could not save song", body)
     }
 }
 
