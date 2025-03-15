@@ -61,7 +61,7 @@ class SpotifyAPI {
                     console.log("Too many requests, waiting 1s")
                     setTimeout(function () {
                         self.call(method, url, param, true_callback, error_callback_, error_message, body, call_count + 1);
-                    }, 5000);
+                    }, 1000);
                 }
             } else {
                 self.error_callback(this.status, `${error_message}; Error may caused by Spotify API: ${this.responseText}`);
